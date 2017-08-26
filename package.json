@@ -1,0 +1,28 @@
+{
+  "name": "data-streamer-provider",
+  "productName": "DataStreamer Provider",
+  "version": "1.0.0",
+  "description": "Electron application that monitors data in selected directory and provides it to receiver.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "watch": "watchify app/app.js -t babelify -o public/js/bundle.js --debug --verbose"
+  },
+  "author": "Hristo Spasov",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babelify": "^7.3.0",
+    "electron": "~1.6.2",
+    "electron-reload": "^1.2.1",
+    "watchify": "^3.9.0"
+  },
+  "dependencies": {
+    "chokidar": "^1.7.0",
+    "electron": "^1.6.12",
+    "jquery": "^3.2.1",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-router-dom": "^4.2.2"
+  }
+}
