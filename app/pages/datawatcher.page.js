@@ -26,7 +26,8 @@ class DataWatcher extends React.Component {
 
         this.state.watcher = chokidar.watch(path, {
             ignored: /[\/\\]\./,
-            persistent: true
+            persistent: true,
+            usePolling: true
         });
 
         let onWatcherReady = () => {
