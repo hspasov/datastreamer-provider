@@ -3,7 +3,7 @@ import React from 'react';
 class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { selectedDirectory: '', watcher: null };
+        this.state = { selectedDirectory: '', watcher: null, socket: null };
 
         this.handleSelectDirectory = this.handleSelectDirectory.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
@@ -11,10 +11,12 @@ class DataWatcher extends React.Component {
 
     componentWillUnmount() {
         this.state.watcher.close();
-        this.setState({ selectedDirectory: '', watcher: null });
+        this.state.socket.disconnect();
+        this.setState({ selectedDirectory: '', watcher: null, socket: null });
     }
 
     scanDirectory() {
+        this.state.socket = require('socket.io-client')('http://localhost:3000');
         const path = this.state.selectedDirectory;
         const chokidar = window.require("chokidar");
 
@@ -29,22 +31,29 @@ class DataWatcher extends React.Component {
 
         let onWatcherReady = () => {
             console.info('Initial scan has been completed.');
+            // A check for connection is needed
+            this.state.socket.emit('demo', "Ready");
         }
 
         this.state.watcher
             .on('add', path => {
+                this.state.socket.emit('demo', `File ${path} has been added`);
                 console.log('File', path, 'has been added');
             })
             .on('addDir', path => {
+                this.state.socket.emit('demo', `Directory ${path} has been added`);
                 console.log('Directory', path, 'has been added');
             })
             .on('change', path => {
+                this.state.socket.emit('demo', `File ${path} has been changed`);
                 console.log('File', path, 'has been changed');
             })
             .on('unlink', path => {
+                this.state.socket.emit('demo', `File ${path} has been removed`);
                 console.log('File', path, 'has been removed');
             })
             .on('unlinkDir', path => {
+                this.state.socket.emit('demo', `Directory ${path} has been changed`);
                 console.log('Directory', path, 'has been removed');
             })
             .on('error', error => {
