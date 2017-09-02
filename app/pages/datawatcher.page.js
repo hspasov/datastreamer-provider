@@ -1,12 +1,12 @@
-import React from 'react';
-import io from 'socket.io-client';
+import React from "react";
+import io from "socket.io-client";
 
 class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            selectedRootDirectory: '',
-            currentDirectory: '',
+            selectedRootDirectory: "",
+            currentDirectory: "",
             scannedFiles: new Map(),
             watcher: null,
             watcherOptions: {
@@ -15,10 +15,10 @@ class DataWatcher extends React.Component {
                 usePolling: true,
                 depth: 0
             },
-            socket: io('http://localhost:3000')
+            socket: io("http://localhost:3000")
         };
 
-        this.state.socket.on('serverHandshake', msg => {
+        this.state.socket.on("serverHandshake", msg => {
             console.log(msg);
         });
 
@@ -34,8 +34,8 @@ class DataWatcher extends React.Component {
         this.state.watcher.close();
         this.state.socket.disconnect();
         this.setState({
-            selectedRootDirectory: '',
-            currentDirectory: '',
+            selectedRootDirectory: "",
+            currentDirectory: "",
             scannedFiles: null,
             watcher: null,
             socket: null
@@ -53,52 +53,51 @@ class DataWatcher extends React.Component {
         this.state.watcher = chokidar.watch(path, this.state.watcherOptions);
 
         let onWatcherReady = () => {
-            console.info('Initial scan has been completed.');
+            console.info("Initial scan has been completed.");
             // A check for connection is needed
             console.log(this.state.socket.id);
             console.log(this.state.socket);
-            this.state.socket.emit('serverHandshake', "Ready");
+            this.state.socket.emit("serverHandshake", "Ready");
         }
 
         this.state.watcher
-            .on('raw', function (event, path, details) {
+            .on("raw", function (event, path, details) {
                 // This event should be triggered everytime something happens.
-                console.log('Raw event info:', event, path, details);
+                console.log("Raw event info:", event, path, details);
             })
-            .on('add', path => {
+            .on("add", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit('demo', `File ${path} has been added.`, this.state.scannedFiles.get(path));
-                console.log('File', path, 'has been added');
+                this.state.socket.emit("demo", `File ${path} has been added.`, this.state.scannedFiles.get(path));
+                console.log("File", path, "has been added");
             })
-            .on('addDir', path => {
+            .on("addDir", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit('demo', `Directory ${path} has been added`, this.state.scannedFiles.get(path));
-                console.log('Directory', path, 'has been added');
+                this.state.socket.emit("demo", `Directory ${path} has been added`, this.state.scannedFiles.get(path));
+                console.log("Directory", path, "has been added");
             })
-            .on('change', path => {
+            .on("change", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit('demo', `File ${path} has been changed`, this.state.scannedFiles.get(path));
-                console.log('File', path, 'has been changed');
+                this.state.socket.emit("demo", `File ${path} has been changed`, this.state.scannedFiles.get(path));
+                console.log("File", path, "has been changed");
             })
-            .on('unlink', path => {
+            .on("unlink", path => {
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit('demo', `File ${path} has been removed`);
-                console.log('File', path, 'has been removed');
+                this.state.socket.emit("demo", `File ${path} has been removed`);
+                console.log("File", path, "has been removed");
             })
-            .on('unlinkDir', path => {
+            .on("unlinkDir", path => {
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit('demo', `Directory ${path} has been changed`);
-                console.log('Directory', path, 'has been removed');
+                this.state.socket.emit("demo", `Directory ${path} has been changed`);
+                console.log("Directory", path, "has been removed");
             })
-            .on('error', error => {
-                console.log('Error happened', error);
+            .on("error", error => {
+                console.log("Error happened", error);
             })
-            .on('ready', onWatcherReady);
+            .on("ready", onWatcherReady);
     }
 
     addToScannedFiles(path) {
         let fileMetadata = this.getFileMetadata(path);
-        console.log(fileMetadata);
         this.state.scannedFiles.set(path, fileMetadata);
     }
 
@@ -107,7 +106,7 @@ class DataWatcher extends React.Component {
     }
 
     getFileType(path) {
-        const fs = window.require('fs');
+        const fs = window.require("fs");
         let result = "error";
         let stats = fs.lstatSync(path);
         if (stats.isBlockDevice()) {
@@ -129,7 +128,7 @@ class DataWatcher extends React.Component {
     }
 
     canRead(path) {
-        const fs = window.require('fs');
+        const fs = window.require("fs");
         try {
             fs.accessSync(path, fs.constants.R_OK);
             return true;
@@ -139,7 +138,7 @@ class DataWatcher extends React.Component {
     }
 
     canWrite(path) {
-        const fs = window.require('fs');
+        const fs = window.require("fs");
         try {
             fs.accessSync(path, fs.constants.W_OK);
             return true;
@@ -149,7 +148,7 @@ class DataWatcher extends React.Component {
     }
 
     canExecute(path) {
-        const fs = window.require('fs');
+        const fs = window.require("fs");
         try {
             fs.accessSync(path, fs.constants.X_OK);
             return true;
@@ -168,8 +167,8 @@ class DataWatcher extends React.Component {
     }
 
     getFileMetadata(path) {
-        const pathModule = window.require('path');
-        const fs = window.require('fs');
+        const pathModule = window.require("path");
+        const fs = window.require("fs");
         let metadata = {};
         let stats = fs.lstatSync(path);
         // size in bytes:
@@ -187,10 +186,10 @@ class DataWatcher extends React.Component {
     }
 
     selectDirectory() {
-        const dialog = window.require('electron').dialog;
+        const dialog = window.require("electron").dialog;
 
         dialog.showOpenDialog(mainWindow, {
-            properties: ['openDirectory']
+            properties: ["openDirectory"]
         });
     }
 
