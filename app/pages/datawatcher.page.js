@@ -1,39 +1,52 @@
 import React from 'react';
+import io from 'socket.io-client';
 
 class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { selectedDirectory: '', watcher: null, socket: null };
+        this.state = {
+            selectedRootDirectory: '',
+            currentDirectory: '',
+            watcher: null,
+            watcherOptions: {
+                ignored: /[\/\\]\./,
+                persistent: true,
+                usePolling: true,
+                depth: 0
+            },
+            socket: io('http://localhost:3000')
+        };
 
-        this.handleSelectDirectory = this.handleSelectDirectory.bind(this);
+        this.state.socket.on('serverHandshake', msg => {
+            console.log(msg);
+        });
+
+        this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
     }
 
     componentWillUnmount() {
         this.state.watcher.close();
         this.state.socket.disconnect();
-        this.setState({ selectedDirectory: '', watcher: null, socket: null });
+        this.setState({ selectedRootDirectory: '', watcher: null, socket: null });
     }
 
     scanDirectory() {
-        this.state.socket = require('socket.io-client')('http://localhost:3000');
-        const path = this.state.selectedDirectory;
+        const path = this.state.selectedRootDirectory;
         const chokidar = window.require("chokidar");
 
         if (this.state.watcher !== null) {
             this.state.watcher.close();
         }
 
-        this.state.watcher = chokidar.watch(path, {
-            ignored: /[\/\\]\./,
-            persistent: true,
-            usePolling: true
-        });
+        this.state.watcher = chokidar.watch(path, this.state.watcherOptions);
 
         let onWatcherReady = () => {
             console.info('Initial scan has been completed.');
             // A check for connection is needed
-            this.state.socket.emit('demo', "Ready");
+            console.log(this.state.socket.id);
+            console.log(this.state.socket);
+            this.state.socket.emit('serverHandshake', "Ready");
         }
 
         this.state.watcher
@@ -81,14 +94,14 @@ class DataWatcher extends React.Component {
         });
     }
 
-    handleSelectDirectory(event) {
-        this.setState({ selectedDirectory: event.target.files[0].path });
+    handleSelectRootDirectory(event) {
+        this.setState({ selectedRootDirectory: event.target.files[0].path });
     }
 
     render() {
         return (
             <div>
-                <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectDirectory} />
+                <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
                 <button id="scanDirectory" onClick={this.scanDirectory}>Scan Directory</button>
             </div>
         );
