@@ -6,21 +6,21 @@ class RegisterPage extends React.Component {
         super(props);
 
         this.state = {
-            email: "",
+            name: "",
             password: "",
             confirmPassword: ""
         }
 
-        this.handleEmailChange = this.handleEmailChange.bind(this);
+        this.handleNameChange = this.handleNameChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
         this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleEmailChange(event) {
+    handleNameChange(event) {
         event.preventDefault();
         this.setState({
-            email: event.target.value
+            name: event.target.value
         })
     }
 
@@ -44,10 +44,10 @@ class RegisterPage extends React.Component {
             return;
         }
         let formData = {
-            email: this.state.email,
+            name: this.state.name,
             password: this.state.password
         };
-        fetch("http://localhost:3000/register", {
+        fetch("http://localhost:3000/provider/register", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
@@ -65,7 +65,7 @@ class RegisterPage extends React.Component {
     render() {
         return (
             <div>
-                <input type="email" placeholder="Email: " onChange={this.handleEmailChange} />
+                <input type="text" placeholder="Name: " onChange={this.handleNameChange} />
                 <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
                 <input type="password" placeholder="Confirm password: " onChange={this.handleConfirmPasswordChange} />
                 <button onClick={this.handleSubmit}>Register</button>

@@ -22,7 +22,6 @@
     "bufferutil": "^3.0.2",
     "chokidar": "^1.7.0",
     "electron": "^1.6.12",
-    "firebase": "^4.3.0",
     "form-urlencoded": "^2.0.4",
     "jquery": "^3.2.1",
     "prop-types": "^15.5.10",

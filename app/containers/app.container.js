@@ -39,12 +39,6 @@ class AppContainer extends React.Component {
                         <Button
                             bsStyle="primary"
                             className="btn-margin"
-                            onClick={this.goTo.bind(this, "login")}>
-                            Login
-                        </Button>
-                        <Button
-                            bsStyle="primary"
-                            className="btn-margin"
                             onClick={this.goTo.bind(this, "register")}>
                             Register
                         </Button>
