@@ -1,8 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
+import React from "react";
+import formurlencoded from "form-urlencoded";
 
-class Login extends React.Component {
+class LoginPage extends React.Component {
     constructor(props) {
         super(props);
 
@@ -11,50 +10,55 @@ class Login extends React.Component {
             password: ""
         }
 
-        this.handleSubmit = this.handleSubmit.bind(this);
         this.handleEmailChange = this.handleEmailChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    }
-
-    handleSubmit(event) {
-        console.log("submitted");
-        event.preventDefault();
-        let email = this.state.email;
-        let password = this.state.password;
-        /*this.props.authentication.auth().signInWithEmailAndPassword(email, password).then(() => {
-            console.log("User logged in");
-            // redirect to /datawatcher:
-            this.context.router.history.push("/datawatcher");
-        }).catch(error => {
-            if (error !== null) {
-                console.log(error.message);
-                return;
-            }
-        });*/
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleEmailChange(event) {
-        this.setState({ email: event.target.value });
+        event.preventDefault();
+        this.setState({
+            email: event.target.value
+        })
     }
 
     handlePasswordChange(event) {
-        this.setState({ password: event.target.value });
+        event.preventDefault();
+        this.setState({
+            password: event.target.value
+        });
+    }
+
+    handleSubmit() {
+        let formData = {
+            email: this.state.email,
+            password: this.state.password
+        }
+
+        fetch("http://localhost:3000/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status == 409) {
+                console.log("Authentication failed");
+            } else {
+                this.props.history.replace("/home");
+            }
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     render() {
         return (
             <div>
-                <h1>Login Page</h1>
-                <input type="email" placeholder="Email: " value={this.state.email} onChange={this.handleEmailChange} />
-                <input type="password" placeholder="Password: " value={this.state.password} onChange={this.handlePasswordChange} />
+                <input type="email" name="email" placeholder="Email: " onChange={this.handleEmailChange} />
+                <input type="password" name="password" placeholder="Password: " onChange={this.handlePasswordChange} />
                 <button onClick={this.handleSubmit}>Log in</button>
             </div>
         );
     }
 }
 
-Login.contextTypes = {
-    router: PropTypes.object
-}
-
-export default Login
+export default LoginPage;

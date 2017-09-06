@@ -1,16 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { makeMainRoutes } from "./routes/routes";
 
-import AppContainer from "./containers/app.container";
+const routes = makeMainRoutes();
 
-class App extends React.Component {
-    render() {
-        return (
-            < AppContainer />
-        );
-    }
-}
-
-ReactDOM.render(< App />,
+ReactDOM.render(
+    routes,
     document.getElementById("content")
 );

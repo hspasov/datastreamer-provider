@@ -1,11 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
-
-// import database from '../config/database.js';
-
-import DataWatcher from '../pages/datawatcher.page';
-import Login from '../pages/login.page';
-import Register from '../pages/register.page';
+import React from "react";
+import { Navbar, Button } from "react-bootstrap";
 
 class AppContainer extends React.Component {
     constructor(props) {
@@ -22,64 +16,43 @@ class AppContainer extends React.Component {
         this.setState({ currentUser: user });
     }*/
 
+    goTo(route) {
+        console.log(route);
+        console.log(this.props.history);
+        this.props.history.replace(`${route}`);
+    }
+
     render() {
         return (
-            <BrowserRouter>
-                <div>
-                    <p>Hello World</p>
-                    <div>
-                        <Link to="/home">
-                            Home Page
-                        </Link>
-                        <Link to="/second">
-                            Second Page
-                        </Link>
-                        <Link to="/third">
-                            Third Page
-                        </Link>
-                        <Link to="/datawatcher">
-                            File Watcher
-                        </Link>
-                        {/*
-                            Note: authentication system not implemented
-                        */}
-                        {
-                            /*this.state.currentUser === null &&*/
-                            <Link to="/login">
-                                Log in
-                            </Link>
-                        }
-                        {
-                            /*this.state.currentUser === null &&*/
-                            <Link to="/register">
-                                Register
-                            </Link>
-                        }
-                        {
-                            /*this.state.currentUser !== null &&*/
-                            <a href="#">Log out</a>
-                        }
-                    </div>
-                    <Route path="/login" setCurrentUser={this.setCurrentUser} render={() => <Login /*authentication={todo}*/ />} />
-                    <Route path="/register" setCurrentUser={this.setCurrentUser} render={() => <Register /*authentication={todo}*/ />} />
-                    <Route path="/datawatcher" render={() => <DataWatcher /*authentication={todo}*/ />} />
-                    <Route path="/:page" component={Page} />
-                </div>
-            </BrowserRouter>
+            <div>
+                <Navbar fluid>
+                    <Navbar.Header>
+                        <Navbar.Brand>
+                            <a href="#">DataStreamer</a>
+                        </Navbar.Brand>
+                        <Button
+                            bsStyle="primary"
+                            className="btn-margin"
+                            onClick={this.goTo.bind(this, "datawatcher")}>
+                            DataWatcher
+                        </Button>
+                        <Button
+                            bsStyle="primary"
+                            className="btn-margin"
+                            onClick={this.goTo.bind(this, "login")}>
+                            Login
+                        </Button>
+                        <Button
+                            bsStyle="primary"
+                            className="btn-margin"
+                            onClick={this.goTo.bind(this, "register")}>
+                            Register
+                        </Button>
+                    </Navbar.Header>
+                </Navbar>
+            </div>
         );
     }
 }
-
-const Page = ({ match }) => (
-    <div>
-        {match.params.page}
-    </div>
-);
-
-const Home = () => (
-    <div>
-        <p>Home</p>
-    </div>
-);
 
 export default AppContainer

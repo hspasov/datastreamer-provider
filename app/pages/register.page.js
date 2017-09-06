@@ -1,58 +1,77 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { BrowserRouter, Link, Route } from 'react-router-dom';
+import React from "react";
+import formurlencoded from "form-urlencoded";
 
-class Register extends React.Component {
+class RegisterPage extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             email: "",
-            password: ""
+            password: "",
+            confirmPassword: ""
         }
 
-        this.handleSubmit = this.handleSubmit.bind(this);
         this.handleEmailChange = this.handleEmailChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
-    }
-
-    handleSubmit() {
-        let email = this.state.email;
-        let password = this.state.password;
-        /*this.props.authentication.auth().createUserWithEmailAndPassword(email, password).then(() => {
-            console.log("User registered");
-            // redirect to /datawatcher:
-            this.context.router.history.push("/datawatcher");
-        }).catch(error => {
-            if (error !== null) {
-                console.log(error.message);
-                return;
-            }
-        });*/
+        this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleEmailChange(event) {
-        this.setState({ email: event.target.value });
+        event.preventDefault();
+        this.setState({
+            email: event.target.value
+        })
     }
 
     handlePasswordChange(event) {
-        this.setState({ password: event.target.value });
+        event.preventDefault();
+        this.setState({
+            password: event.target.value
+        });
+    }
+
+    handleConfirmPasswordChange(event) {
+        event.preventDefault();
+        this.setState({
+            confirmPassword: event.target.value
+        });
+    }
+
+    handleSubmit() {
+        if (this.state.password != this.state.confirmPassword) {
+            console.log("Passwords don't match");
+            return;
+        }
+        let formData = {
+            email: this.state.email,
+            password: this.state.password
+        };
+        fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status == 409) {
+                console.log("Authentication failed");
+            } else {
+                this.props.history.replace("/home");
+            }
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     render() {
         return (
             <div>
-                <h1>Register Page</h1>
-                <input type="email" placeholder="Email: " value={this.state.email} onChange={this.handleEmailChange} />
-                <input type="password" placeholder="Password: " value={this.state.password} onChange={this.handlePasswordChange} />
-                <button id="submit" onClick={this.handleSubmit}>Register</button>
+                <input type="email" placeholder="Email: " onChange={this.handleEmailChange} />
+                <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
+                <input type="password" placeholder="Confirm password: " onChange={this.handleConfirmPasswordChange} />
+                <button onClick={this.handleSubmit}>Register</button>
             </div>
         );
     }
 }
 
-Register.contextTypes = {
-    router: PropTypes.object
-}
-
-export default Register
+export default RegisterPage;
