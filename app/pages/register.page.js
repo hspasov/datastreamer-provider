@@ -55,7 +55,10 @@ class RegisterPage extends React.Component {
             if (response.status == 409) {
                 console.log("Authentication failed");
             } else {
-                this.props.history.replace("/home");
+                this.props.location.state.setProviderData(response);
+                this.props.history.push("/datawatcher", {
+                    setProviderData: this.props.location.state.setProviderData
+                });
             }
         }).catch(error => {
             console.log(error);

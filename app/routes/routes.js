@@ -1,12 +1,12 @@
 import React from "react";
-import { createHashHistory } from "history";
+import { createMemoryHistory } from "history";
 import { Route, Router } from "react-router-dom";
 import AppContainer from "../containers/app.container";
 import DataWatcher from "../pages/datawatcher.page";
 import RegisterPage from "../pages/register.page";
 import PropTypes from 'prop-types';
 
-const history = createHashHistory();
+const history = createMemoryHistory();
 
 export const makeMainRoutes = () => {
     return (

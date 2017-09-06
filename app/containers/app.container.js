@@ -6,20 +6,23 @@ class AppContainer extends React.Component {
         super(props);
 
         this.state = {
-            currentUser: null
+            providerData: null
         };
 
-        // this.setCurrentUser = this.setCurrentUser.bind(this);
+        this.setProviderData = this.setProviderData.bind(this);
     }
 
-    /*setCurrentUser(user) {
-        this.setState({ currentUser: user });
-    }*/
+    setProviderData(data) {
+        console.log(data);
+        this.setState({ providerData: data });
+    }
 
     goTo(route) {
         console.log(route);
         console.log(this.props.history);
-        this.props.history.replace(`${route}`);
+        this.props.history.push(`${route}`, {
+            setProviderData: this.setProviderData
+        });
     }
 
     render() {
