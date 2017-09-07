@@ -1,7 +1,9 @@
 import React from "react";
+import { connect } from "react-redux";
+import registerProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
 
-class RegisterPage extends React.Component {
+class Register extends React.Component {
     constructor(props) {
         super(props);
 
@@ -53,13 +55,14 @@ class RegisterPage extends React.Component {
             body: formurlencoded(formData)
         }).then(response => {
             if (response.status == 409) {
-                console.log("Authentication failed");
+                throw "Authentication failed";
             } else {
-                this.props.location.state.setProviderData(response);
-                this.props.history.push("/datawatcher", {
-                    setProviderData: this.props.location.state.setProviderData
-                });
+                return response.json();
             }
+        }).then(json => {
+            console.log(json);
+            this.props.dispatch(registerProvider(json));
+            this.props.history.push("/datawatcher");
         }).catch(error => {
             console.log(error);
         });
@@ -76,5 +79,11 @@ class RegisterPage extends React.Component {
         );
     }
 }
+
+const RegisterPage = connect(store => {
+    return {
+        provider: store.provider
+    };
+})(Register)
 
 export default RegisterPage;

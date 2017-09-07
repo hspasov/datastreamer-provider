@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import io from "socket.io-client";
 
 import getFileType from "../modules/getFileType";
@@ -167,13 +168,11 @@ class DataWatcher extends React.Component {
     }
 
     render() {
-        /*if (this.props.authentication.auth().currentUser === null) {
+        if (!this.props.provider.providerId) {
             return (
                 <p>Please login or register.</p>
             );
         }
-        console.log(this.props.authentication.auth().currentUser);
-        */
         return (
             <div>
                 <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
@@ -183,4 +182,10 @@ class DataWatcher extends React.Component {
     }
 }
 
-export default DataWatcher
+const DataWatcherPage = connect(store => {
+    return {
+        provider: store.provider
+    };
+})(DataWatcher);
+
+export default DataWatcherPage;

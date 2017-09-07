@@ -4,25 +4,16 @@ import { Navbar, Button } from "react-bootstrap";
 class AppContainer extends React.Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            providerData: null
-        };
-
-        this.setProviderData = this.setProviderData.bind(this);
     }
 
-    setProviderData(data) {
-        console.log(data);
-        this.setState({ providerData: data });
+    componentDidMount() {
+        this.props.history.push("/register");
     }
 
     goTo(route) {
         console.log(route);
         console.log(this.props.history);
-        this.props.history.push(`${route}`, {
-            setProviderData: this.setProviderData
-        });
+        this.props.history.push(`${route}`);
     }
 
     render() {
