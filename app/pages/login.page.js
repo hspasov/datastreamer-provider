@@ -3,19 +3,17 @@ import { connect } from "react-redux";
 import loginProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
 
-class Register extends React.Component {
+class Login extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             name: "",
-            password: "",
-            confirmPassword: ""
+            password: ""
         }
 
         this.handleNameChange = this.handleNameChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
-        this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -33,23 +31,12 @@ class Register extends React.Component {
         });
     }
 
-    handleConfirmPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            confirmPassword: event.target.value
-        });
-    }
-
     handleSubmit() {
-        if (this.state.password != this.state.confirmPassword) {
-            console.log("Passwords don't match");
-            return;
-        }
         let formData = {
             name: this.state.name,
             password: this.state.password
         };
-        fetch("http://localhost:3000/provider/register", {
+        fetch("http://localhost:3000/provider/login", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
@@ -73,17 +60,16 @@ class Register extends React.Component {
             <div>
                 <input type="text" placeholder="Name: " onChange={this.handleNameChange} />
                 <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
-                <input type="password" placeholder="Confirm password: " onChange={this.handleConfirmPasswordChange} />
-                <button onClick={this.handleSubmit}>Register</button>
+                <button onClick={this.handleSubmit}>Login</button>
             </div>
         );
     }
 }
 
-const RegisterPage = connect(store => {
+const LoginPage = connect(store => {
     return {
         provider: store.provider
     };
-})(Register)
+})(Login)
 
-export default RegisterPage;
+export default LoginPage;

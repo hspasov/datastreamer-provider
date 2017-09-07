@@ -4,7 +4,7 @@ export default function reducer(
         providerId: null
     }, action) {
     switch (action.type) {
-        case "REGISTER_PROVIDER": {
+        case "LOGIN_PROVIDER": {
             return {
                 ...state,
                 name: action.payload.name,

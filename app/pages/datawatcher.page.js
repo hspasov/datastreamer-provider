@@ -1,6 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
 import io from "socket.io-client";
+import formurlencoded from "form-urlencoded";
+
+import { setSession, endSession } from "../actions/session";
 
 import getFileType from "../modules/getFileType";
 import getFilePermissions from "../modules/getFilePermissions";
@@ -47,9 +50,23 @@ class DataWatcher extends React.Component {
         this.scanDirectory = this.scanDirectory.bind(this);
         this.addToScannedFiles = this.addToScannedFiles.bind(this);
         this.removeFromScannedFiles = this.removeFromScannedFiles.bind(this);
+        this.deleteSession = this.deleteSession.bind(this);
+    }
+
+    componentDidMount() {
+        if (this.props.provider.providerId) {
+            window.addEventListener('beforeunload', this.deleteSession);
+        }
     }
 
     componentWillUnmount() {
+        if (this.props.provider.providerId) {
+            this.deleteSession();
+            window.removeEventListener('beforeunload', this.deleteSession);
+        }
+    }
+
+    deleteSession() {
         if (this.state.watcher != null) {
             this.state.watcher.close();
         }
@@ -61,9 +78,43 @@ class DataWatcher extends React.Component {
             watcher: null,
             socket: null
         });
+        fetch("http://localhost:3000/session/end", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded({ id: this.props.session.id })
+        }).then(response => {
+            if (response.status == 409) {
+                throw "End session failed";
+            }
+        }).catch(error => {
+            console.log(error);
+        });
+        this.props.dispatch(endSession());
     }
 
     scanDirectory() {
+        let providerData = {
+            type: "provider",
+            userId: this.props.provider.providerId
+        };
+
+        console.log(typeof this.props.provider.providerId);
+        fetch("http://localhost:3000/session/new", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(providerData)
+        }).then(response => {
+            if (response.status == 409) {
+                throw "Create new session failed";
+            } else {
+                return response.json();
+            }
+        }).then(json => {
+            this.props.dispatch(setSession(json));
+        }).catch(error => {
+            console.log(error);
+        });
+
         const path = this.state.currentDirectory;
         const chokidar = window.require("chokidar");
 
@@ -184,7 +235,8 @@ class DataWatcher extends React.Component {
 
 const DataWatcherPage = connect(store => {
     return {
-        provider: store.provider
+        provider: store.provider,
+        session: store.session
     };
 })(DataWatcher);
 

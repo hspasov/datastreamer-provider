@@ -1,6 +1,6 @@
-export default function registerProvider(provider) {
+export default function loginProvider(provider) {
     return {
-        type: "REGISTER_PROVIDER",
+        type: "LOGIN_PROVIDER",
         payload: provider
     }
 }

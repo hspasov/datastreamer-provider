@@ -7,7 +7,7 @@ class AppContainer extends React.Component {
     }
 
     componentDidMount() {
-        this.props.history.push("/register");
+        this.props.history.push("/login");
     }
 
     goTo(route) {
@@ -35,6 +35,12 @@ class AppContainer extends React.Component {
                             className="btn-margin"
                             onClick={this.goTo.bind(this, "register")}>
                             Register
+                        </Button>
+                        <Button
+                            bsStyle="primary"
+                            className="btn-margin"
+                            onClick={this.goTo.bind(this, "login")}>
+                            Login
                         </Button>
                     </Navbar.Header>
                 </Navbar>
