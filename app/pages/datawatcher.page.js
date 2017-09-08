@@ -3,8 +3,6 @@ import { connect } from "react-redux";
 import io from "socket.io-client";
 import formurlencoded from "form-urlencoded";
 
-import { setSession, endSession } from "../actions/session";
-
 import getFileType from "../modules/getFileType";
 import getFilePermissions from "../modules/getFilePermissions";
 
@@ -23,7 +21,9 @@ class DataWatcher extends React.Component {
                 usePolling: true,
                 depth: 0
             },
-            socket: io("http://localhost:3000")
+            socket: io("http://localhost:3000", {
+                query: `type=provider&id=${this.props.provider.providerId}`
+            })
         };
 
         /*
@@ -44,6 +44,12 @@ class DataWatcher extends React.Component {
         this.state.socket.on("opendirProvider", selectedDir => {
             this.setState({ currentDirectory: pathModule.join(this.state.currentDirectory, selectedDir) });
             this.scanDirectory();
+        });
+
+        this.state.socket.on("getAllData", receiver => {
+            this.state.scannedFiles.forEach((file, key) => {
+                this.state.socket.emit("sendData", receiver, file);
+            });
         });
 
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
@@ -78,18 +84,6 @@ class DataWatcher extends React.Component {
             watcher: null,
             socket: null
         });
-        fetch("http://localhost:3000/session/end", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded", },
-            body: formurlencoded({ id: this.props.session.id })
-        }).then(response => {
-            if (response.status == 409) {
-                throw "End session failed";
-            }
-        }).catch(error => {
-            console.log(error);
-        });
-        this.props.dispatch(endSession());
     }
 
     scanDirectory() {
@@ -99,21 +93,6 @@ class DataWatcher extends React.Component {
         };
 
         console.log(typeof this.props.provider.providerId);
-        fetch("http://localhost:3000/session/new", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded", },
-            body: formurlencoded(providerData)
-        }).then(response => {
-            if (response.status == 409) {
-                throw "Create new session failed";
-            } else {
-                return response.json();
-            }
-        }).then(json => {
-            this.props.dispatch(setSession(json));
-        }).catch(error => {
-            console.log(error);
-        });
 
         const path = this.state.currentDirectory;
         const chokidar = window.require("chokidar");
@@ -127,8 +106,6 @@ class DataWatcher extends React.Component {
         let onWatcherReady = () => {
             console.info("Initial scan has been completed.");
             // A check for connection is needed
-            console.log(this.state.socket.id);
-            console.log(this.state.socket);
             this.state.socket.emit("serverHandshake", "Ready");
         }
 
@@ -139,27 +116,27 @@ class DataWatcher extends React.Component {
             })
             .on("add", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("demo", `File ${path} has been added.`, this.state.scannedFiles.get(path));
+                this.state.socket.emit("sendData", `File ${path} has been added.`, this.state.scannedFiles.get(path));
                 console.log("File", path, "has been added");
             })
             .on("addDir", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("demo", `Directory ${path} has been added`, this.state.scannedFiles.get(path));
+                this.state.socket.emit("sendData", `Directory ${path} has been added`, this.state.scannedFiles.get(path));
                 console.log("Directory", path, "has been added");
             })
             .on("change", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("demo", `File ${path} has been changed`, this.state.scannedFiles.get(path));
+                this.state.socket.emit("sendData", `File ${path} has been changed`, this.state.scannedFiles.get(path));
                 console.log("File", path, "has been changed");
             })
             .on("unlink", path => {
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit("demo", `File ${path} has been removed`);
+                this.state.socket.emit("sendData", `File ${path} has been removed`);
                 console.log("File", path, "has been removed");
             })
             .on("unlinkDir", path => {
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit("demo", `Directory ${path} has been changed`);
+                this.state.socket.emit("sendData", `Directory ${path} has been changed`);
                 console.log("Directory", path, "has been removed");
             })
             .on("error", error => {
@@ -236,7 +213,6 @@ class DataWatcher extends React.Component {
 const DataWatcherPage = connect(store => {
     return {
         provider: store.provider,
-        session: store.session
     };
 })(DataWatcher);
 

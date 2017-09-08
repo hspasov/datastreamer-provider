@@ -60,7 +60,6 @@ class Register extends React.Component {
                 return response.json();
             }
         }).then(json => {
-            console.log(json);
             this.props.dispatch(loginProvider(json));
             this.props.history.push("/datawatcher");
         }).catch(error => {
