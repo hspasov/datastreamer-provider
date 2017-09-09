@@ -11,8 +11,6 @@ class AppContainer extends React.Component {
     }
 
     goTo(route) {
-        console.log(route);
-        console.log(this.props.history);
         this.props.history.push(`${route}`);
     }
 

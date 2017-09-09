@@ -3,7 +3,6 @@ var getFilePermissions = path => {
     filePermissions.read = canRead(path);
     filePermissions.write = canWrite(path);
     filePermissions.execute = canWrite(path);
-    console.log(filePermissions);
     return filePermissions;
 }
 

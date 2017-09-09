@@ -26,33 +26,22 @@ class DataWatcher extends React.Component {
             })
         };
 
-        /*
-            Examlpe of socket.io communication with server:
-            Prints message sent by server when server emits "serverHandshake"
-        */
-        this.state.socket.on("serverHandshake", msg => {
-            console.log(msg);
-        });
-
-        /*
-            Listen for "opendirProvider" from server. When received,
-            that means a folder is opened. Component's state is changed
-            to keep the newly opened directory's path.
-            Finally a function to scan the newly opened directory is called
-            Note: doesn't work. User session is needed
-        */
-        this.state.socket.on("opendirProvider", selectedDir => {
-            this.setState({ currentDirectory: pathModule.join(this.state.currentDirectory, selectedDir) });
-            this.scanDirectory();
-        });
-
         this.state.socket.on("getAllData", receiver => {
             this.state.scannedFiles.forEach((file, key) => {
                 this.state.socket.emit("sendData", receiver, file);
             });
         });
 
+        this.state.socket.on("openDirectory", (receiver, selectedDirectory) => {
+            this.setState({
+                currentDirectory: pathModule.join(this.state.currentDirectory, selectedDirectory),
+                scannedFiles: new Map()
+            });
+            this.scanDirectory(receiver);
+        })
+
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
+        this.initialScan = this.initialScan.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
         this.addToScannedFiles = this.addToScannedFiles.bind(this);
         this.removeFromScannedFiles = this.removeFromScannedFiles.bind(this);
@@ -63,6 +52,7 @@ class DataWatcher extends React.Component {
         if (this.props.provider.providerId) {
             window.addEventListener('beforeunload', this.deleteSession);
         }
+        this.state.socket.emit("connectToClients", this.props.provider.providerId);
     }
 
     componentWillUnmount() {
@@ -86,14 +76,11 @@ class DataWatcher extends React.Component {
         });
     }
 
-    scanDirectory() {
-        let providerData = {
-            type: "provider",
-            userId: this.props.provider.providerId
-        };
+    initialScan() {
+        this.scanDirectory(null);
+    }
 
-        console.log(typeof this.props.provider.providerId);
-
+    scanDirectory(receiver) {
         const path = this.state.currentDirectory;
         const chokidar = window.require("chokidar");
 
@@ -105,8 +92,6 @@ class DataWatcher extends React.Component {
 
         let onWatcherReady = () => {
             console.info("Initial scan has been completed.");
-            // A check for connection is needed
-            this.state.socket.emit("serverHandshake", "Ready");
         }
 
         this.state.watcher
@@ -116,28 +101,23 @@ class DataWatcher extends React.Component {
             })
             .on("add", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", `File ${path} has been added.`, this.state.scannedFiles.get(path));
-                console.log("File", path, "has been added");
+                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
             })
             .on("addDir", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", `Directory ${path} has been added`, this.state.scannedFiles.get(path));
-                console.log("Directory", path, "has been added");
+                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
             })
             .on("change", path => {
                 this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", `File ${path} has been changed`, this.state.scannedFiles.get(path));
-                console.log("File", path, "has been changed");
+                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
             })
             .on("unlink", path => {
                 this.removeFromScannedFiles(path);
                 this.state.socket.emit("sendData", `File ${path} has been removed`);
-                console.log("File", path, "has been removed");
             })
             .on("unlinkDir", path => {
                 this.removeFromScannedFiles(path);
                 this.state.socket.emit("sendData", `Directory ${path} has been changed`);
-                console.log("Directory", path, "has been removed");
             })
             .on("error", error => {
                 console.log("Error happened", error);
@@ -157,7 +137,6 @@ class DataWatcher extends React.Component {
                 this.state.selectedRootDirectory, ""
             ), metadata.name
         );
-        console.log(getFileType);
         metadata.type = getFileType(path);
         metadata.size = stats["size"];
         metadata.access = getFilePermissions(path);
@@ -204,7 +183,7 @@ class DataWatcher extends React.Component {
         return (
             <div>
                 <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
-                <button id="scanDirectory" onClick={this.scanDirectory}>Scan Directory</button>
+                <button id="scanDirectory" onClick={this.initialScan}>Scan Directory</button>
             </div>
         );
     }
