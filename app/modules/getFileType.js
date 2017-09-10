@@ -1,4 +1,4 @@
-var getFileType = path => {
+function getFileType(path) {
     const fs = window.require("fs");
     let result = "error";
     let stats = fs.lstatSync(path);

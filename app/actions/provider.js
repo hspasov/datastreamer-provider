@@ -1,6 +1,8 @@
-export default function loginProvider(provider) {
+const loginProvider = provider => {
     return {
         type: "LOGIN_PROVIDER",
         payload: provider
     }
 }
+
+export default loginProvider;

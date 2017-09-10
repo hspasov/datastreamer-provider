@@ -55,7 +55,7 @@ class DataWatcher extends React.Component {
 
     componentDidMount() {
         if (this.props.provider.providerId) {
-            window.addEventListener('beforeunload', this.deleteSession);
+            window.addEventListener("beforeunload", this.deleteSession);
         }
         this.state.socket.emit("connectToClients", this.props.provider.providerId);
     }
@@ -63,7 +63,7 @@ class DataWatcher extends React.Component {
     componentWillUnmount() {
         if (this.props.provider.providerId) {
             this.deleteSession();
-            window.removeEventListener('beforeunload', this.deleteSession);
+            window.removeEventListener("beforeunload", this.deleteSession);
         }
     }
 
@@ -102,7 +102,7 @@ class DataWatcher extends React.Component {
         }
 
         this.state.watcher
-            .on("raw", function (event, path, details) {
+            .on("raw", (event, path, details) => {
                 // This event should be triggered everytime something happens.
                 console.log("Raw event info:", event, path, details);
             })

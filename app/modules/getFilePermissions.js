@@ -1,4 +1,6 @@
-var getFilePermissions = path => {
+const fs = window.require("fs");
+
+function getFilePermissions(path) {
     let filePermissions = {};
     filePermissions.read = canRead(path);
     filePermissions.write = canWrite(path);
@@ -7,7 +9,6 @@ var getFilePermissions = path => {
 }
 
 function canRead(path) {
-    const fs = window.require("fs");
     try {
         fs.accessSync(path, fs.constants.R_OK);
         return true;
@@ -17,7 +18,6 @@ function canRead(path) {
 }
 
 function canWrite(path) {
-    const fs = window.require("fs");
     try {
         fs.accessSync(path, fs.constants.W_OK);
         return true;
@@ -27,7 +27,6 @@ function canWrite(path) {
 }
 
 function canExecute(path) {
-    const fs = window.require("fs");
     try {
         fs.accessSync(path, fs.constants.X_OK);
         return true;
@@ -36,4 +35,4 @@ function canExecute(path) {
     }
 }
 
-module.exports = getFilePermissions;
+export default getFilePermissions;

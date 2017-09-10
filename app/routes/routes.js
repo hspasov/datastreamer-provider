@@ -5,7 +5,6 @@ import AppContainer from "../containers/app.container";
 import DataWatcherPage from "../pages/datawatcher.page";
 import RegisterPage from "../pages/register.page";
 import LoginPage from "../pages/login.page";
-import PropTypes from 'prop-types';
 
 const history = createMemoryHistory();
 
