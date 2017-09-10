@@ -12,7 +12,7 @@ class DataWatcher extends React.Component {
         super(props);
         this.state = {
             selectedRootDirectory: "",
-            currentDirectory: "",
+            currentDirectory: ".",
             scannedFiles: new Map(),
             watcher: null,
             watcherOptions: {
@@ -28,13 +28,17 @@ class DataWatcher extends React.Component {
 
         this.state.socket.on("getAllData", receiver => {
             this.state.scannedFiles.forEach((file, key) => {
-                this.state.socket.emit("sendData", receiver, file);
+                this.state.socket.emit("sendData", receiver, {
+                    action: "init",
+                    value: file
+                });
             });
         });
 
         this.state.socket.on("openDirectory", (receiver, selectedDirectory) => {
+            console.log(`Current directory: ${this.state.currentDirectory}, Requested to open directory ${selectedDirectory}`);
             this.setState({
-                currentDirectory: pathModule.join(this.state.currentDirectory, selectedDirectory),
+                currentDirectory: selectedDirectory,
                 scannedFiles: new Map()
             });
             this.scanDirectory(receiver);
@@ -43,9 +47,10 @@ class DataWatcher extends React.Component {
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initialScan = this.initialScan.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
-        this.addToScannedFiles = this.addToScannedFiles.bind(this);
+        this.changeScannedFiles = this.changeScannedFiles.bind(this);
         this.removeFromScannedFiles = this.removeFromScannedFiles.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
+        this.getFileMetadata = this.getFileMetadata.bind(this);
     }
 
     componentDidMount() {
@@ -69,7 +74,7 @@ class DataWatcher extends React.Component {
         this.state.socket.disconnect();
         this.setState({
             selectedRootDirectory: "",
-            currentDirectory: "",
+            currentDirectory: ".",
             scannedFiles: null,
             watcher: null,
             socket: null
@@ -81,7 +86,9 @@ class DataWatcher extends React.Component {
     }
 
     scanDirectory(receiver) {
-        const path = this.state.currentDirectory;
+        const pathModule = window.require("path");
+        const path = pathModule.join(this.state.selectedRootDirectory, this.state.currentDirectory);
+
         const chokidar = window.require("chokidar");
 
         if (this.state.watcher !== null) {
@@ -100,24 +107,39 @@ class DataWatcher extends React.Component {
                 console.log("Raw event info:", event, path, details);
             })
             .on("add", path => {
-                this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
+                this.changeScannedFiles(path);
+                this.state.socket.emit("sendData", receiver, {
+                    action: "add",
+                    value: this.state.scannedFiles.get(path)
+                });
             })
             .on("addDir", path => {
-                this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
+                this.changeScannedFiles(path);
+                this.state.socket.emit("sendData", receiver, {
+                    action: "addDir",
+                    value: this.state.scannedFiles.get(path)
+                });
             })
             .on("change", path => {
-                this.addToScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, this.state.scannedFiles.get(path));
+                this.changeScannedFiles(path);
+                this.state.socket.emit("sendData", receiver, {
+                    action: "change",
+                    value: this.state.scannedFiles.get(path)
+                });
             })
             .on("unlink", path => {
+                this.state.socket.emit("sendData", receiver, {
+                    action: "unlink",
+                    value: this.state.scannedFiles.get(path)
+                });
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit("sendData", `File ${path} has been removed`);
             })
             .on("unlinkDir", path => {
+                this.state.socket.emit("sendData", receiver, {
+                    action: "unlinkDir",
+                    value: this.state.scannedFiles.get(path)
+                });
                 this.removeFromScannedFiles(path);
-                this.state.socket.emit("sendData", `Directory ${path} has been changed`);
             })
             .on("error", error => {
                 console.log("Error happened", error);
@@ -132,18 +154,15 @@ class DataWatcher extends React.Component {
         let stats = fs.lstatSync(path);
         // size in bytes:
         metadata.name = pathModule.basename(path);
-        metadata.path = pathModule.join(
-            this.state.currentDirectory.replace(
-                this.state.selectedRootDirectory, ""
-            ), metadata.name
-        );
+        metadata.path = (path == pathModule.join(this.state.selectedRootDirectory, this.state.currentDirectory)) ?
+            this.state.currentDirectory : pathModule.join(this.state.currentDirectory, metadata.name);
         metadata.type = getFileType(path);
         metadata.size = stats["size"];
         metadata.access = getFilePermissions(path);
         return metadata;
     }
 
-    addToScannedFiles(path) {
+    changeScannedFiles(path) {
         let fileMetadata = this.getFileMetadata(path);
         this.state.scannedFiles.set(path, fileMetadata);
     }
@@ -169,8 +188,7 @@ class DataWatcher extends React.Component {
     handleSelectRootDirectory(event) {
         let dirPath = event.target.files[0].path;
         this.setState({
-            selectedRootDirectory: dirPath,
-            currentDirectory: dirPath
+            selectedRootDirectory: dirPath
         });
     }
 
