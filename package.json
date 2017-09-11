@@ -33,6 +33,7 @@
     "react-router-dom": "^4.2.2",
     "redux": "^3.7.2",
     "socket.io": "^2.0.3",
+    "tree-model": "^1.0.6",
     "utf-8-validate": "^3.0.3"
   }
 }

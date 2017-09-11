@@ -2,53 +2,75 @@ import React from "react";
 import { connect } from "react-redux";
 import io from "socket.io-client";
 import formurlencoded from "form-urlencoded";
+import TreeModel from "tree-model";
 
 import getFileType from "../modules/getFileType";
 import getFilePermissions from "../modules/getFilePermissions";
 
+const pathModule = window.require("path");
+const chokidar = window.require("chokidar");
+const fs = window.require("fs");
+const dialog = window.require("electron").dialog;
+const tree = new TreeModel();
+
 class DataWatcher extends React.Component {
     constructor(props) {
-        const pathModule = window.require("path");
         super(props);
-        this.state = {
-            selectedRootDirectory: "",
-            currentDirectory: ".",
-            scannedFiles: new Map(),
-            watcher: null,
-            watcherOptions: {
-                ignored: /[\/\\]\./,
-                persistent: true,
-                usePolling: true,
-                depth: 0
-            },
-            socket: io("http://localhost:3000", {
-                query: `type=provider&id=${this.props.provider.providerId}`
-            })
+        this.selectedRootDirectory = "";
+        this.clientsCurrentDirectory = new Map();
+        this.scannedFiles = null;
+        this.watcher = null;
+        this.watcherOptions = {
+            ignored: /[\/\\]\./,
+            persistent: true,
+            usePolling: true
         };
+        this.socket = io("http://localhost:3000", {
+            query: `type=provider&id=${this.props.provider.providerId}`
+        });
 
-        this.state.socket.on("getAllData", receiver => {
-            this.state.scannedFiles.forEach((file, key) => {
-                this.state.socket.emit("sendData", receiver, {
+        this.socket.on("subscribedClient", clientId => {
+            this.clientsCurrentDirectory.set(clientId, this.selectedRootDirectory);
+            if (this.scannedFiles !== null) {
+                this.socket.emit("sendDirectoryData", clientId, this.scannedFiles.model.value);
+                this.scannedFiles.children.forEach(node => {
+                    this.socket.emit("sendData", clientId, {
+                        action: "init",
+                        value: node.model.value
+                    });
+                });
+            }
+        });
+
+        this.socket.on("openDirectory", (clientId, selectedDirectory) => {
+            const path = selectedDirectory === pathModule.sep ?
+                this.selectedRootDirectory : pathModule.join(this.selectedRootDirectory, selectedDirectory);
+            this.clientsCurrentDirectory.set(clientId, path);
+            let directoryNode = this.scannedFiles.first(node => {
+                return node.model.id === path;
+            });
+            this.socket.emit(
+                "sendDirectoryData",
+                clientId,
+                directoryNode.model.value // todo: read TreeModel's docs
+            );
+            directoryNode.children.forEach(node => {
+                this.socket.emit("sendData", clientId, {
                     action: "init",
-                    value: file
+                    value: (node.value) ? node.value : node.model.value // todo: check TreeModel's docs
                 });
             });
         });
 
-        this.state.socket.on("openDirectory", (receiver, selectedDirectory) => {
-            console.log(`Current directory: ${this.state.currentDirectory}, Requested to open directory ${selectedDirectory}`);
-            this.setState({
-                currentDirectory: selectedDirectory,
-                scannedFiles: new Map()
-            });
-            this.scanDirectory(receiver);
-        })
+        this.socket.on("removeClient", clientId => {
+            this.clientsCurrentDirectory.delete(clientId);
+        });
 
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
-        this.initialScan = this.initialScan.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
-        this.changeScannedFiles = this.changeScannedFiles.bind(this);
-        this.removeFromScannedFiles = this.removeFromScannedFiles.bind(this);
+        this.addFile = this.addFile.bind(this);
+        this.changeFile = this.changeFile.bind(this);
+        this.removeFile = this.removeFile.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
         this.getFileMetadata = this.getFileMetadata.bind(this);
     }
@@ -57,7 +79,7 @@ class DataWatcher extends React.Component {
         if (this.props.provider.providerId) {
             window.addEventListener("beforeunload", this.deleteSession);
         }
-        this.state.socket.emit("connectToClients", this.props.provider.providerId);
+        this.socket.emit("connectToClients", this.props.provider.providerId);
     }
 
     componentWillUnmount() {
@@ -68,78 +90,100 @@ class DataWatcher extends React.Component {
     }
 
     deleteSession() {
-        if (this.state.watcher != null) {
-            this.state.watcher.close();
+        if (this.watcher != null) {
+            this.watcher.close();
         }
-        this.state.socket.disconnect();
-        this.setState({
-            selectedRootDirectory: "",
-            currentDirectory: ".",
-            scannedFiles: null,
-            watcher: null,
-            socket: null
+        this.socket.disconnect();
+        this.selectedRootDirectory = "";
+        this.scannedFiles = null;
+        this.watcher = null;
+        this.socket = null;
+    }
+
+    scanDirectory() {
+        if (this.watcher !== null) {
+            this.watcher.close();
+        }
+
+        this.scannedFiles = tree.parse({
+            id: this.selectedRootDirectory,
+            value: this.getFileMetadata(this.selectedRootDirectory),
+            children: []
         });
-    }
 
-    initialScan() {
-        this.scanDirectory(null);
-    }
-
-    scanDirectory(receiver) {
-        const pathModule = window.require("path");
-        const path = pathModule.join(this.state.selectedRootDirectory, this.state.currentDirectory);
-
-        const chokidar = window.require("chokidar");
-
-        if (this.state.watcher !== null) {
-            this.state.watcher.close();
-        }
-
-        this.state.watcher = chokidar.watch(path, this.state.watcherOptions);
+        this.watcher = chokidar.watch(this.selectedRootDirectory, this.watcherOptions);
 
         let onWatcherReady = () => {
             console.info("Initial scan has been completed.");
+            console.log(this.scannedFiles);
         }
 
-        this.state.watcher
+        this.watcher
             .on("raw", (event, path, details) => {
                 // This event should be triggered everytime something happens.
                 console.log("Raw event info:", event, path, details);
             })
             .on("add", path => {
-                this.changeScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, {
-                    action: "add",
-                    value: this.state.scannedFiles.get(path)
+                let fileMetadata = this.addFile(path);
+                let parent = pathModule.dirname(path);
+                this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+                    // emit only to clients that are in the directory where the change
+                    // is happening
+                    if (parent === currentDirectory) {
+                        this.socket.emit("sendData", client, {
+                            action: "add",
+                            value: fileMetadata
+                        });
+                    }
                 });
             })
             .on("addDir", path => {
-                this.changeScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, {
-                    action: "addDir",
-                    value: this.state.scannedFiles.get(path)
+                let fileMetadata = this.addFile(path);
+                let parent = pathModule.dirname(path);
+                this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+                    if (parent === currentDirectory) {
+                        this.socket.emit("sendData", client, {
+                            action: "addDir",
+                            value: fileMetadata
+                        });
+                    }
                 });
             })
             .on("change", path => {
-                this.changeScannedFiles(path);
-                this.state.socket.emit("sendData", receiver, {
-                    action: "change",
-                    value: this.state.scannedFiles.get(path)
+                let fileMetadata = this.changeFile(path);
+                let parent = pathModule.dirname(path);
+                this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+                    if (parent === currentDirectory) {
+                        this.socket.emit("sendData", receiver, {
+                            action: "change",
+                            value: fileMetadata
+                        });
+                    }
                 });
             })
             .on("unlink", path => {
-                this.state.socket.emit("sendData", receiver, {
-                    action: "unlink",
-                    value: this.state.scannedFiles.get(path)
+                let fileMetadata = this.removeFile(path);
+                let parent = pathModule.dirname(path);
+                this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+                    if (parent === currentDirectory) {
+                        this.socket.emit("sendData", receiver, {
+                            action: "unlink",
+                            value: fileMetadata
+                        });
+                    }
                 });
-                this.removeFromScannedFiles(path);
             })
             .on("unlinkDir", path => {
-                this.state.socket.emit("sendData", receiver, {
-                    action: "unlinkDir",
-                    value: this.state.scannedFiles.get(path)
+                let fileMetadata = this.removeFile(path);
+                let parent = pathModule.dirname(path);
+                this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+                    if (parent === currentDirectory) {
+                        this.socket.emit("sendData", receiver, {
+                            action: "unlinkDir",
+                            value: fileMetadata
+                        });
+                    }
                 });
-                this.removeFromScannedFiles(path);
             })
             .on("error", error => {
                 console.log("Error happened", error);
@@ -148,27 +192,49 @@ class DataWatcher extends React.Component {
     }
 
     getFileMetadata(path) {
-        const pathModule = window.require("path");
-        const fs = window.require("fs");
         let metadata = {};
         let stats = fs.lstatSync(path);
         // size in bytes:
         metadata.name = pathModule.basename(path);
-        metadata.path = (path == pathModule.join(this.state.selectedRootDirectory, this.state.currentDirectory)) ?
-            this.state.currentDirectory : pathModule.join(this.state.currentDirectory, metadata.name);
+        metadata.path = (path == this.selectedRootDirectory) ?
+            path.sep : path.replace(this.selectedRootDirectory, ""); // hide absolute path
         metadata.type = getFileType(path);
         metadata.size = stats["size"];
         metadata.access = getFilePermissions(path);
         return metadata;
     }
 
-    changeScannedFiles(path) {
-        let fileMetadata = this.getFileMetadata(path);
-        this.state.scannedFiles.set(path, fileMetadata);
+    addFile(path) {
+        const fileMetadata = this.getFileMetadata(path);
+        const parentPath = pathModule.dirname(path);
+        if (path !== this.selectedRootDirectory) {
+            let parent = this.scannedFiles.first(node => {
+                return node.model.id === parentPath;
+            });
+            parent.addChild(tree.parse({
+                id: path,
+                value: fileMetadata,
+                children: []
+            }));
+        }
+        return fileMetadata;
     }
 
-    removeFromScannedFiles(path) {
-        this.state.scannedFiles.delete(path);
+    changeFile(path) {
+        const fileMetadata = this.getFileMetadata(path);
+        let file = this.scannedFiles.first(node => {
+            return node.model.id === path;
+        });
+        file.model.value = fileMetadata;
+        return fileMetadata;
+    }
+
+    removeFile(path) {
+        let file = this.scannedFiles.first(node => {
+            return node.model.id === path;
+        });
+        file.drop();
+        return fileMetadata;
     }
 
     _addDirectory(node) {
@@ -178,8 +244,6 @@ class DataWatcher extends React.Component {
     }
 
     selectDirectory() {
-        const dialog = window.require("electron").dialog;
-
         dialog.showOpenDialog(mainWindow, {
             properties: ["openDirectory"]
         });
@@ -187,8 +251,10 @@ class DataWatcher extends React.Component {
 
     handleSelectRootDirectory(event) {
         let dirPath = event.target.files[0].path;
-        this.setState({
-            selectedRootDirectory: dirPath
+        this.selectedRootDirectory = dirPath;
+        this.clientsCurrentDirectory.forEach((currentDirectory, client) => {
+            this.clientsCurrentDirectory.set(client, dirPath);
+            this.socket.emit("sendDirectoryData", client, this.getFileMetadata(dirPath));
         });
     }
 
@@ -201,7 +267,7 @@ class DataWatcher extends React.Component {
         return (
             <div>
                 <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
-                <button id="scanDirectory" onClick={this.initialScan}>Scan Directory</button>
+                <button id="scanDirectory" onClick={this.scanDirectory}>Scan Directory</button>
             </div>
         );
     }
