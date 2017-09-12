@@ -37,9 +37,12 @@ class Client {
         if (!selectedDirectory) {
             throw `Invalid directory ${selectedDirectory}`;
         }
+        if (this.watcher) {
+            this.watcher.close();
+        }
+        this.watcher = null;
         this.currentDirectory = selectedDirectory;
         this.scannedFiles = new Map();
-        this.watcher = null;
     }
 
     changeScannedFiles(path, isCurrentDirectory = false) {
