@@ -2,19 +2,12 @@ import React from "react";
 import { connect } from "react-redux";
 import io from "socket.io-client";
 import formurlencoded from "form-urlencoded";
-import TreeModel from "tree-model";
 
 import Client from "../modules/client";
 
 const pathModule = window.require("path");
 const chokidar = window.require("chokidar");
 const dialog = window.require("electron").dialog;
-
-const pathModule = window.require("path");
-const chokidar = window.require("chokidar");
-const fs = window.require("fs");
-const dialog = window.require("electron").dialog;
-const tree = new TreeModel();
 
 class DataWatcher extends React.Component {
     constructor(props) {
