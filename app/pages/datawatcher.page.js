@@ -233,8 +233,7 @@ class DataWatcher extends React.Component {
         let file = this.scannedFiles.first(node => {
             return node.model.id === path;
         });
-        file.drop();
-        return fileMetadata;
+        return file.drop().model.value;
     }
 
     _addDirectory(node) {
