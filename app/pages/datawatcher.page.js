@@ -1,10 +1,12 @@
 import React from "react";
 import { connect } from "react-redux";
 import io from "socket.io-client";
+import ss from "socket.io-stream";
 import formurlencoded from "form-urlencoded";
 
 import Client from "../modules/client";
 
+const fs = window.require("fs");
 const pathModule = window.require("path");
 const chokidar = window.require("chokidar");
 const dialog = window.require("electron").dialog;
@@ -20,9 +22,9 @@ class DataWatcher extends React.Component {
 
         this.socket.on("subscribedClient", clientId => {
             this.clients.set(clientId, new Client(clientId));
-            if (this.selectedRootDirectory) {
-                this.scanDirectory(this.clients.get(clientId));
-            }
+            // if (this.selectedRootDirectory) {
+            //     this.scanDirectory(this.clients.get(clientId));
+            // }
         });
 
         this.socket.on("unsubscribedClient", clientId => {
@@ -31,11 +33,73 @@ class DataWatcher extends React.Component {
             this.clients.delete(clientId);
         });
 
-        this.socket.on("openDirectory", (clientId, selectedDirectory) => {
-            const client = this.clients.get(clientId);
-            client.changeDirectory(selectedDirectory);
-            this.scanDirectory(this.clients.get(clientId));
-        })
+        // this.socket.on("openDirectory", (clientId, selectedDirectory) => {
+        //     const client = this.clients.get(clientId);
+        //     client.changeDirectory(selectedDirectory);
+        //     this.scanDirectory(this.clients.get(clientId));
+        // });
+
+        // this.socket.on("downloadFile", (clientId, filePath) => {
+        //     const path = pathModule.join(this.selectedRootDirectory, filePath);
+        //     const stream = ss.createStream();
+        //     ss(this.socket).emit("streamFile", clientId, stream);
+        //     ss(this.socket).on("end", () => {
+        //         console.log("file sent");
+        //     });
+        //     fs.createReadStream(path).pipe(stream);
+        // });
+
+        this.socket.on("setRemoteDescription", description => {
+            console.log("setting remote description", description);
+            this.peerConnection.setRemoteDescription(description);
+            this.peerConnection.createAnswer().then(
+                description => {
+                    console.log("creating answer");
+                    console.log("setting local description", description);
+                    this.peerConnection.setLocalDescription(description);
+                    this.socket.emit("connectToClient", this.props.provider.providerId, description);
+                },
+                error => {
+                    console.log("there was an error while creating an answer", error);
+                }
+            );
+        });
+
+        this.socket.on("iceCallback1", (clientId, candidate) => {
+            console.log("inside iceCallback1");
+            this.peerConnection.addIceCandidate(candidate).then(
+                () => {
+                    console.log("added ice candidate", candidate);
+                },
+                error => {
+                    console.log("failed to add candidate", error);
+                }
+            );
+        });
+
+        this.servers = null;
+        this.peerConnectionConstraint = null;
+        this.dataConstraint = null;
+        this.peerConnection = new RTCPeerConnection(this.servers, this.peerConnectionConstraint);
+        console.log("created peer connection", this.peerConnection);
+        this.receiveChannel = this.peerConnection.createDataChannel("receiveDataChannel", this.dataConstraint);
+        console.log("created receive channel", this.receiveChannel);
+
+        this.peerConnection.onicecandidate = event => {
+            console.log("ice callback");
+            if (event.candidate) {
+                console.log("sending candidate", event.candidate);
+                this.socket.emit("iceCallback2", this.props.provider.providerId, event.candidate);
+            }
+        };
+
+        this.peerConnection.ondatachannel = event => {
+            console.log("Receive channel callback");
+            this.receiveChannel = event.channel;
+            this.receiveChannel.onmessage = event => {
+                console.log("Message: ", event.data);
+            }
+        }
 
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
@@ -89,45 +153,45 @@ class DataWatcher extends React.Component {
                 client.changeScannedFiles(path, sendDirectoryData);
                 if (sendDirectoryData) {
                     sendDirectoryData = false;
-                    this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
+                    // this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
                 } else {
-                    this.socket.emit("sendData", client.id, {
-                        action: "add",
-                        value: client.scannedFiles.get(path)
-                    });
+                    // this.socket.emit("sendData", client.id, {
+                    //     action: "add",
+                    //     value: client.scannedFiles.get(path)
+                    // });
                 }
             })
             .on("addDir", path => {
                 client.changeScannedFiles(path, sendDirectoryData);
                 if (sendDirectoryData) {
                     sendDirectoryData = false;
-                    this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
+                    // this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
                 } else {
-                    this.socket.emit("sendData", client.id, {
-                        action: "addDir",
-                        value: client.scannedFiles.get(path)
-                    });
+                    // this.socket.emit("sendData", client.id, {
+                    //     action: "addDir",
+                    //     value: client.scannedFiles.get(path)
+                    // });
                 }
             })
             .on("change", path => {
                 client.changeScannedFiles(path);
-                this.socket.emit("sendData", client.id, {
-                    action: "change",
-                    value: client.scannedFiles.get(path)
-                });
+                // this.socket.emit("sendData", client.id, {
+                //     action: "change",
+                //     value: client.scannedFiles.get(path)
+                // });
             })
             .on("unlink", path => {
-                this.socket.emit("sendData", client.id, {
-                    action: "unlink",
-                    value: client.scannedFiles.get(path)
-                });
+                // this.socket.emit("sendData", client.id, {
+                //     action: "unlink",
+                //     value: client.scannedFiles.get(path)
+                // });
                 client.removeFromScannedFiles(path);
             })
             .on("unlinkDir", path => {
-                this.socket.emit("sendData", client.id, {
-                    action: "unlinkDir",
-                    value: client.scannedFiles.get(path)
-                });
+                // this.socket.emit("sendData", client.id, {
+                //     action: "unlinkDir",
+                //     value: client.scannedFiles.get(path)
+                // });
                 client.removeFromScannedFiles(path);
             })
             .on("error", error => {
