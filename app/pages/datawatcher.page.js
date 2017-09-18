@@ -25,24 +25,54 @@ class DataWatcher extends React.Component {
             this.clients.delete(clientId);
         });
 
-        // this.socket.on("openDirectory", (clientId, selectedDirectory) => {
-        //     const client = this.clients.get(clientId);
-        //     client.changeDirectory(selectedDirectory);
-        //     this.scanDirectory(this.clients.get(clientId));
-        // });
-
         this.socket.on("setRemoteDescription", (clientId, description) => {
             this.clients.set(clientId, new Client(clientId));
-            // if (this.selectedRootDirectory) {
-            //     this.scanDirectory(this.clients.get(clientId));
-            // }
+            const client = this.clients.get(clientId);
+            client.servers = null;
+            client.peerConnectionConstraint = null;
+            client.dataConstraint = null;
+            client.peerConnection = new RTCPeerConnection(client.servers, client.peerConnectionConstraint);
+            console.log("created peer connection", client.peerConnection);
+            client.peerConnection.onicecandidate = event => {
+                console.log("ice callback");
+                if (event.candidate) {
+                    console.log("sending candidate", event.candidate);
+                    this.socket.emit("sendICECandidate", "client", this.props.provider.providerId, event.candidate);
+                }
+            };
+
+            client.peerConnection.ondatachannel = event => {
+                console.log("Receive channel callback");
+                client.receiveChannel = event.channel;
+                client.receiveChannel.onmessage = event => {
+                    this.processMessage(client, JSON.parse(event.data));
+                }
+            }
+
+            client.receiveChannel = client.peerConnection.createDataChannel("receiveDataChannel", client.dataConstraint);
+            console.log("created receive channel", client.receiveChannel);
+            client.sendChannel = client.peerConnection.createDataChannel("sendDataChannel", client.dataConstraint);
+            console.log("created send channel", client.receiveChannel);
             console.log("setting remote description", description);
-            this.peerConnection.setRemoteDescription(description);
-            this.peerConnection.createAnswer().then(
+
+            client.sendChannel.onopen = () => {
+                console.log("Send channel is ", client.sendChannel.readyState);
+                client.sendChannel.send(JSON.stringify({
+                    action: "message",
+                    message: "It works, from provider"
+                }));
+                if (this.selectedRootDirectory) {
+                    this.scanDirectory(client);
+                }
+            }
+
+            client.peerConnection.setRemoteDescription(description);
+
+            client.peerConnection.createAnswer().then(
                 description => {
                     console.log("creating answer");
                     console.log("setting local description", description);
-                    this.peerConnection.setLocalDescription(description);
+                    client.peerConnection.setLocalDescription(description);
                     this.socket.emit("connectToClient", clientId, description);
                 },
                 error => {
@@ -53,7 +83,8 @@ class DataWatcher extends React.Component {
 
         this.socket.on("receiveICECandidate", (clientId, candidate) => {
             console.log("receiving ICE Candidate");
-            this.peerConnection.addIceCandidate(candidate).then(
+            const client = this.clients.get(clientId);
+            client.peerConnection.addIceCandidate(candidate).then(
                 () => {
                     console.log("added ice candidate", candidate);
                 },
@@ -63,39 +94,9 @@ class DataWatcher extends React.Component {
             );
         });
 
-        this.servers = null;
-        this.peerConnectionConstraint = null;
-        this.dataConstraint = null;
-        this.peerConnection = new RTCPeerConnection(this.servers, this.peerConnectionConstraint);
-        console.log("created peer connection", this.peerConnection);
-        this.receiveChannel = this.peerConnection.createDataChannel("receiveDataChannel", this.dataConstraint);
-        console.log("created receive channel", this.receiveChannel);
-        this.sendChannel = this.peerConnection.createDataChannel("sendDataChannel", this.dataConstraint);
-        console.log("created send channel", this.receiveChannel);
-
-        this.peerConnection.onicecandidate = event => {
-            console.log("ice callback");
-            if (event.candidate) {
-                console.log("sending candidate", event.candidate);
-                this.socket.emit("sendICECandidate", "client", this.props.provider.providerId, event.candidate);
-            }
-        };
-
-        this.peerConnection.ondatachannel = event => {
-            console.log("Receive channel callback");
-            this.receiveChannel = event.channel;
-            this.receiveChannel.onmessage = event => {
-                console.log("Message: ", event.data);
-            }
-        }
-
-        this.sendChannel.onopen = () => {
-            console.log("Send channel is ", this.sendChannel.readyState);
-            this.sendChannel.send("It works, from provider");
-        }
-
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.connectToClients = this.connectToClients.bind(this);
+        this.processMessage = this.processMessage.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
@@ -137,6 +138,18 @@ class DataWatcher extends React.Component {
         }
     }
 
+    processMessage(client, message) {
+        switch (message.action) {
+            case "openDirectory":
+                client.changeDirectory(message.selectedDirectory);
+                this.scanDirectory(client);
+                break;
+            case "message":
+                console.log(message.message);
+                break;
+        }
+    }
+
     scanDirectory(client) {
         let sendDirectoryData = true;
         const path = pathModule.join(this.selectedRootDirectory, client.currentDirectory)
@@ -151,45 +164,51 @@ class DataWatcher extends React.Component {
                 client.changeScannedFiles(path, sendDirectoryData);
                 if (sendDirectoryData) {
                     sendDirectoryData = false;
-                    // this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
+                    client.sendChannel.send(JSON.stringify({
+                        action: "sendDirectoryData",
+                        data: client.scannedFiles.get(path)
+                    }));
                 } else {
-                    // this.socket.emit("sendData", client.id, {
-                    //     action: "add",
-                    //     value: client.scannedFiles.get(path)
-                    // });
+                    client.sendChannel.send(JSON.stringify({
+                        action: "add",
+                        data: client.scannedFiles.get(path)
+                    }));
                 }
             })
             .on("addDir", path => {
                 client.changeScannedFiles(path, sendDirectoryData);
                 if (sendDirectoryData) {
                     sendDirectoryData = false;
-                    // this.socket.emit("sendDirectoryData", client.id, client.scannedFiles.get(path));
+                    client.sendChannel.send(JSON.stringify({
+                        action: "sendDirectoryData",
+                        data: client.scannedFiles.get(path)
+                    }));
                 } else {
-                    // this.socket.emit("sendData", client.id, {
-                    //     action: "addDir",
-                    //     value: client.scannedFiles.get(path)
-                    // });
+                    client.sendChannel.send(JSON.stringify({
+                        action: "addDir",
+                        data: client.scannedFiles.get(path)
+                    }));
                 }
             })
             .on("change", path => {
                 client.changeScannedFiles(path);
-                // this.socket.emit("sendData", client.id, {
-                //     action: "change",
-                //     value: client.scannedFiles.get(path)
-                // });
+                client.sendChannel.send(JSON.stringify({
+                    action: "change",
+                    data: client.scannedFiles.get(path)
+                }));
             })
             .on("unlink", path => {
-                // this.socket.emit("sendData", client.id, {
-                //     action: "unlink",
-                //     value: client.scannedFiles.get(path)
-                // });
+                client.sendChannel.send(JSON.stringify({
+                    action: "unlink",
+                    data: client.scannedFiles.get(path)
+                }));
                 client.removeFromScannedFiles(path);
             })
             .on("unlinkDir", path => {
-                // this.socket.emit("sendData", client.id, {
-                //     action: "unlinkDir",
-                //     value: client.scannedFiles.get(path)
-                // });
+                client.sendChannel.send(JSON.stringify({
+                    action: "unlinkDir",
+                    data: client.scannedFiles.get(path)
+                }));
                 client.removeFromScannedFiles(path);
             })
             .on("error", error => {
