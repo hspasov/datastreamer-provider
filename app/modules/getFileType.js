@@ -1,7 +1,5 @@
-function getFileType(path) {
-    const fs = window.require("fs");
+function getFileType(path, stats) {
     let result = "error";
-    let stats = fs.lstatSync(path);
     if (stats.isBlockDevice()) {
         result = "blockDevice";
     } else if (stats.isCharacterDevice()) {

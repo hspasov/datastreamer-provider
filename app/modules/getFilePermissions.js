@@ -1,11 +1,11 @@
 const fs = window.require("fs");
 
 function getFilePermissions(path) {
-    let filePermissions = {};
-    filePermissions.read = canRead(path);
-    filePermissions.write = canWrite(path);
-    filePermissions.execute = canWrite(path);
-    return filePermissions;
+    return {
+        read: canRead(path),
+        write: canWrite(path),
+        execute: canWrite(path)
+    };
 }
 
 function canRead(path) {

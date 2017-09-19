@@ -2,13 +2,13 @@ import getFileType from "../modules/getFileType";
 import getFilePermissions from "../modules/getFilePermissions";
 
 const pathModule = window.require("path");
-const fs = window.require("fs");
 
 class Client {
     constructor(id, currentDirectory = ".", watcherOptions = {
         ignored: /[\/\\]\./,
         persistent: true,
         usePolling: true,
+        alwaysStat: true,
         depth: 0
     }) {
         this.id = id;
@@ -45,11 +45,11 @@ class Client {
         this.scannedFiles = new Map();
     }
 
-    changeScannedFiles(path, isCurrentDirectory = false) {
+    changeScannedFiles(path, stats, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path ${path}`;
         }
-        let fileMetadata = this.getFileMetadata(path, isCurrentDirectory);
+        let fileMetadata = this.getFileMetadata(path, stats, isCurrentDirectory);
         this.scannedFiles.set(path, fileMetadata);
     }
 
@@ -60,20 +60,19 @@ class Client {
         this.scannedFiles.delete(path);
     }
 
-    getFileMetadata(path, isCurrentDirectory = false) {
+    getFileMetadata(path, stats, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path, ${path}`;
         }
-        let metadata = {};
-        let stats = fs.lstatSync(path);
-        // size in bytes:
-        metadata.name = pathModule.basename(path);
-        metadata.path = isCurrentDirectory ?
-            this.currentDirectory : pathModule.join(this.currentDirectory, metadata.name);
-        metadata.type = getFileType(path);
-        metadata.size = stats["size"];
-        metadata.access = getFilePermissions(path);
-        return metadata;
+        const fileName = pathModule.basename(path);
+        return {
+            name: fileName,
+            path: isCurrentDirectory ?
+                this.currentDirectory : pathModule.join(this.currentDirectory, fileName),
+            type: getFileType(path, stats),
+            size: stats["size"],
+            access: getFilePermissions(path)
+        };
     }
 
     restart() {
