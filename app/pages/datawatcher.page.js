@@ -93,6 +93,7 @@ class DataWatcher extends React.Component {
         this.processMessage = this.processMessage.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
         this.initializeP2PConnection = this.initializeP2PConnection.bind(this);
+        this.sendFile = this.sendFile.bind(this);
         this.scanDirectory = this.scanDirectory.bind(this);
         this.deleteClientSession = this.deleteP2PConnection.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
@@ -132,20 +133,22 @@ class DataWatcher extends React.Component {
 
             client.peerConnection.ondatachannel = event => {
                 console.log("Receive Channel Callback");
-                client.receiveChannel = event.channel;
-                client.receiveChannel.onmessage = event => {
+                client.receiveMessageChannel = event.channel;
+                client.receiveMessageChannel.binaryType = "arraybuffer";
+                client.receiveMessageChannel.onmessage = event => {
                     console.log("receive message: ", JSON.parse(event.data));
                     this.processMessage(client, JSON.parse(event.data));
                 }
             }
 
-            client.receiveChannel = client.peerConnection.createDataChannel("receiveDataChannel", client.dataConstraint);
-            client.sendChannel = client.peerConnection.createDataChannel("sendDataChannel", client.dataConstraint);
+            client.sendMessageChannel = client.peerConnection.createDataChannel("sendMessageChannel", client.dataConstraint);
+            client.sendFileChannel = client.peerConnection.createDataChannel("sendFileChannel", client.dataConstraint);
+            client.sendFileChannel.binaryType = "arraybuffer";
             console.log("Created send data channel");
 
-            client.sendChannel.onopen = () => {
-                console.log("send channel state is: " + client.sendChannel.readyState);
-                client.sendChannel.send(JSON.stringify({
+            client.sendMessageChannel.onopen = () => {
+                console.log("send channel state is: " + client.sendMessageChannel.readyState);
+                client.sendMessageChannel.send(JSON.stringify({
                     action: "message",
                     message: "It works, from provider"
                 }));
@@ -156,7 +159,7 @@ class DataWatcher extends React.Component {
             console.log("Requesting P2P connection");
             this.socket.emit("requestP2PConnection", client.id);
         } catch (e) {
-            if (!client || !client.sendChannel || !client.receiveChannel || !client.peerConnection) {
+            if (!client || !client.sendMessageChannel || !client.receiveMessageChannel || !client.peerConnection) {
                 console.log("Connection with client lost");
             } else {
                 throw e;
@@ -167,10 +170,12 @@ class DataWatcher extends React.Component {
     deleteP2PConnection(client, error = null) {
         if (client) {
             client.delete();
-            client.sendChannel && client.sendChannel.close();
-            console.log("Closed data channel with label: " + client.sendChannel.label)
-            client.receiveChannel && client.receiveChannel.close();
-            console.log("Closed data channel with label: " + client.receiveChannel.label);
+            client.sendMessageChannel && console.log("Closed data channel with label: " + client.sendMessageChannel.label);
+            client.sendMessageChannel && client.sendMessageChannel.close();
+            client.sendFileChannel && console.log("Closed data channel with label: " + client.sendFileChannel.label);
+            client.sendFileChannel && client.sendFileChannel.close();
+            client.receiceMessageChannel && console.log("Closed data channel with label: " + client.receiveMessageChannel.label);
+            client.receiveMessageChannel && client.receiveMessageChannel.close();
             client.peerConnection && client.peerConnection.close();
             console.log("Closed peer connection");
             this.clients.delete(client.id);
@@ -194,7 +199,7 @@ class DataWatcher extends React.Component {
         } else {
             this.clients.forEach((client, clientId) => {
                 client.restart();
-                if (client.sendChannel && client.sendChannel.readyState == "open") {
+                if (client.sendMessageChannel && client.sendMessageChannel.readyState == "open") {
                     this.scanDirectory(client);
                 }
             });
@@ -215,6 +220,9 @@ class DataWatcher extends React.Component {
                     }
                 }
                 break;
+            case "downloadFile":
+                this.sendFile(client, message.filePath);
+                break;
             case "message":
                 console.log(message.message);
                 break;
@@ -223,12 +231,34 @@ class DataWatcher extends React.Component {
 
     sendMessage(client, action, data) {
         try {
-            client.sendChannel.send(JSON.stringify({
+            client.sendMessageChannel.send(JSON.stringify({
                 action: action,
                 data: data
             }));
         } catch (e) {
-            if (!client.sendChannel) {
+            if (!client.sendMessageChannel) {
+                console.log("Can't finish task. Connection to provider lost.");
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    sendFile(client, filePath) {
+        try {
+            const path = pathModule.join(this.selectedRootDirectory, filePath);
+            const readStream = fs.createReadStream(path);
+            readStream.on("data", chunk => {
+                console.log(chunk);
+                console.log(chunk.length);
+                client.sendFileChannel.send(chunk);
+            });
+            readStream.on("end", () => {
+                console.log("end of file streaming");
+                this.sendMessage(client, "eof");
+            });
+        } catch (e) {
+            if (!client.sendFileChannel) {
                 console.log("Can't finish task. Connection to provider lost.");
             } else {
                 throw e;
@@ -237,8 +267,6 @@ class DataWatcher extends React.Component {
     }
 
     scanDirectory(client) {
-        console.log("send channel id", client.sendChannel.id);
-        console.log("receive chanel id", client.receiveChannel.id);
         let isCurrentDirectory = true;
         const path = pathModule.join(this.selectedRootDirectory, client.currentDirectory);
         client.setWatcher(chokidar.watch(path, client.watcherOptions));
