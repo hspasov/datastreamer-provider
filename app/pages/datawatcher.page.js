@@ -255,7 +255,7 @@ class DataWatcher extends React.Component {
             });
             readStream.on("end", () => {
                 console.log("end of file streaming");
-                this.sendMessage(client, "eof");
+                this.sendMessage(client, "eof", {path: filePath});
             });
         } catch (e) {
             if (!client.sendFileChannel) {
