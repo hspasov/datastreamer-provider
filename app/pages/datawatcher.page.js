@@ -1,7 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
 import io from "socket.io-client";
-import formurlencoded from "form-urlencoded";
+import fileExtension from "file-extension";
+import mime from "mime";
 
 import Client from "../modules/client";
 
@@ -246,6 +247,13 @@ class DataWatcher extends React.Component {
 
     sendFile(client, filePath) {
         try {
+            console.log(`Filepath is ${filePath}`);
+            console.log(`Extension is ${fileExtension(filePath)}`);
+            console.log(`Mime is ${mime.getType(fileExtension(filePath))}`);
+            this.sendMessage(client, "sendFileMetadata", {
+                path: filePath,
+                mime: mime.getType(fileExtension(filePath))
+            });
             const path = pathModule.join(this.selectedRootDirectory, filePath);
             const readStream = fs.createReadStream(path);
             readStream.on("data", chunk => {
@@ -255,7 +263,6 @@ class DataWatcher extends React.Component {
             });
             readStream.on("end", () => {
                 console.log("end of file streaming");
-                this.sendMessage(client, "eof", {path: filePath});
             });
         } catch (e) {
             if (!client.sendFileChannel) {
