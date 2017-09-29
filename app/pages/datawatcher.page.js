@@ -16,7 +16,7 @@ class DataWatcher extends React.Component {
         super(props);
         this.selectedRootDirectory = "";
         this.socket = io("http://localhost:3000", {
-            query: `type=provider&id=${this.props.provider.providerId}`
+            query: `type=provider&username=${this.props.provider.username}`
         });
         this.clients = new Map();
 
@@ -101,21 +101,21 @@ class DataWatcher extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.provider.providerId) {
+        if (this.props.provider.username) {
             window.addEventListener("beforeunload", this.deleteSession);
         }
         this.connectToClients();
     }
 
     componentWillUnmount() {
-        if (this.props.provider.providerId) {
+        if (this.props.provider.username) {
             this.deleteSession();
             window.removeEventListener("beforeunload", this.deleteSession);
         }
     }
 
     connectToClients() {
-        this.socket.emit("connectToClients", this.props.provider.providerId);
+        this.socket.emit("connectToClients", this.props.provider.username);
     }
 
     initializeP2PConnection(client) {
@@ -128,7 +128,7 @@ class DataWatcher extends React.Component {
             client.peerConnection.onicecandidate = event => {
                 console.log("local ice callback");
                 if (event.candidate) {
-                    this.socket.emit("sendICECandidate", "client", this.props.provider.providerId, event.candidate);
+                    this.socket.emit("sendICECandidate", "client", this.props.provider.username, event.candidate);
                 }
             };
 
@@ -336,7 +336,7 @@ class DataWatcher extends React.Component {
     }
 
     render() {
-        if (!this.props.provider.providerId) {
+        if (!this.props.provider.username) {
             return (
                 <p>Please login or register.</p>
             );

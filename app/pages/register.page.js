@@ -8,21 +8,21 @@ class Register extends React.Component {
         super(props);
 
         this.state = {
-            name: "",
+            username: "",
             password: "",
             confirmPassword: ""
         }
 
-        this.handleNameChange = this.handleNameChange.bind(this);
+        this.handleUsernameChange = this.handleUsernameChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
         this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleNameChange(event) {
+    handleUsernameChange(event) {
         event.preventDefault();
         this.setState({
-            name: event.target.value
+            username: event.target.value
         })
     }
 
@@ -46,7 +46,7 @@ class Register extends React.Component {
             return;
         }
         let formData = {
-            name: this.state.name,
+            username: this.state.username,
             password: this.state.password
         };
         fetch("http://localhost:3000/provider/register", {
@@ -70,7 +70,7 @@ class Register extends React.Component {
     render() {
         return (
             <div>
-                <input type="text" placeholder="Name: " onChange={this.handleNameChange} />
+                <input type="text" placeholder="Name: " onChange={this.handleUsernameChange} />
                 <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
                 <input type="password" placeholder="Confirm password: " onChange={this.handleConfirmPasswordChange} />
                 <button onClick={this.handleSubmit}>Register</button>
