@@ -313,6 +313,7 @@ class DataWatcher extends React.Component {
             })
             .on("ready", () => {
                 console.info("Initial scan has been completed.");
+                this.sendMessage(client, "doneSending");
             });
     }
 
