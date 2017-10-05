@@ -43,6 +43,13 @@ class DataWatcher extends React.Component {
                         client.peerConnection.setLocalDescription(description);
                         console.log("Answer from remoteConnection \n" + description.sdp);
                         this.socket.emit("connectToClient", clientId, description);
+                        console.log("peerConnection state", client.peerConnection.connectionState);
+                        console.log("current local description", client.peerConnection.currentLocalDescription);
+                        console.log("current remote description", client.peerConnection.currentRemoteDescription);
+                        console.log("local description", client.peerConnection.localDescription);
+                        console.log("remote description", client.peerConnection.remoteDescription);
+                        console.log("pending local description", client.peerConnection.pendingLocalDescription);
+                        console.log("pending remote description", client.peerConnection.pendingRemoteDescription);
                     },
                     error => {
                         console.log("there was an error while creating an answer", error);
@@ -72,6 +79,13 @@ class DataWatcher extends React.Component {
                 client.peerConnection.addIceCandidate(candidate).then(
                     () => {
                         console.log("AddIceCandidate success");
+                        console.log("peerConnection state", client.peerConnection.connectionState);
+                        console.log("current local description", client.peerConnection.currentLocalDescription);
+                        console.log("current remote description", client.peerConnection.currentRemoteDescription);
+                        console.log("local description", client.peerConnection.localDescription);
+                        console.log("remote description", client.peerConnection.remoteDescription);
+                        console.log("pending local description", client.peerConnection.pendingLocalDescription);
+                        console.log("pending remote description", client.peerConnection.pendingRemoteDescription);
                     },
                     error => {
                         console.log("failed to add candidate", error);
@@ -86,6 +100,13 @@ class DataWatcher extends React.Component {
                     throw e;
                 }
             }
+            console.log("peerConnection state", client.peerConnection.connectionState);
+            console.log("current local description", client.peerConnection.currentLocalDescription);
+            console.log("current remote description", client.peerConnection.currentRemoteDescription);
+            console.log("local description", client.peerConnection.localDescription);
+            console.log("remote description", client.peerConnection.remoteDescription);
+            console.log("pending local description", client.peerConnection.pendingLocalDescription);
+            console.log("pending remote description", client.peerConnection.pendingRemoteDescription);
         });
 
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
@@ -127,6 +148,13 @@ class DataWatcher extends React.Component {
             console.log("Created local peer connection object localConnection");
             client.peerConnection.onicecandidate = event => {
                 console.log("local ice callback");
+                console.log("peerConnection state", client.peerConnection.connectionState);
+                console.log("current local description", client.peerConnection.currentLocalDescription);
+                console.log("current remote description", client.peerConnection.currentRemoteDescription);
+                console.log("local description", client.peerConnection.localDescription);
+                console.log("remote description", client.peerConnection.remoteDescription);
+                console.log("pending local description", client.peerConnection.pendingLocalDescription);
+                console.log("pending remote description", client.peerConnection.pendingRemoteDescription);
                 if (event.candidate) {
                     this.socket.emit("sendICECandidate", "client", this.props.provider.username, event.candidate);
                 }
