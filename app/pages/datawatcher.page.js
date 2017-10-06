@@ -156,7 +156,10 @@ class DataWatcher extends React.Component {
                 console.log("pending local description", client.peerConnection.pendingLocalDescription);
                 console.log("pending remote description", client.peerConnection.pendingRemoteDescription);
                 if (event.candidate) {
-                    this.socket.emit("sendICECandidate", "client", this.props.provider.username, event.candidate);
+                    console.log(`Emitting "sendICECandidate" to client ${client.id} with candidate ${event.candidate}`);
+                    this.socket.emit("sendICECandidate", "client", client.id, event.candidate);
+                } else {
+                    console.log(`event.candidate is ${event.candidate}, event is ${event}`);
                 }
             };
 
