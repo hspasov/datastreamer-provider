@@ -4,8 +4,9 @@ import Client from "../modules/client";
 class Socket {
     constructor(RTC, providerName) {
         this.RTC = RTC;
-        this.socket = io("http://localhost:3000", {
-            query: `type=provider&username=${providerName}`
+        this.socket = io("https://datastreamer.local:3000", {
+            query: `type=provider&username=${providerName}`,
+            secure: true
         });
 
         this.socket.on("unsubscribedClient", clientId => {
