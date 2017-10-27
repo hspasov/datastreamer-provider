@@ -10,18 +10,18 @@ class DataWatcher extends React.Component {
 
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
-        this.RTC = new RTC(this.props.provider.username);
+        this.RTC = new RTC(this.props.provider.token);
     }
 
     componentDidMount() {
-        if (this.props.provider.username) {
+        if (this.props.provider.token) {
             window.addEventListener("beforeunload", this.deleteSession);
         }
         this.RTC.connectToClients();
     }
 
     componentWillUnmount() {
-        if (this.props.provider.username) {
+        if (this.props.provider.token) {
             this.RTC.deleteSession();
             window.removeEventListener("beforeunload", this.deleteSession);
         }
@@ -51,7 +51,7 @@ class DataWatcher extends React.Component {
     }
 
     render() {
-        if (!this.props.provider.username) {
+        if (!this.props.provider.token) {
             return (
                 <p>Please login or register.</p>
             );

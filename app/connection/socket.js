@@ -2,10 +2,10 @@ import io from "socket.io-client";
 import Client from "../modules/client";
 
 class Socket {
-    constructor(RTC, providerName) {
+    constructor(RTC, token) {
         this.RTC = RTC;
         this.socket = io("https://datastreamer.local:3000", {
-            query: `type=provider&username=${providerName}`,
+            query: `token=${token}`,
             secure: true
         });
 

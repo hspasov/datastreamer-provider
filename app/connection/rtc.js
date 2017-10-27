@@ -7,10 +7,10 @@ const fs = window.require("fs");
 const pathModule = window.require("path");
 
 class RTC {
-    constructor(providerName) {
-        this.socket = new Socket(this, providerName).socket;
+    constructor(token) {
+        this.socket = new Socket(this, token).socket;
         this.clients = new Map();
-        this.providerName = providerName;
+        this.token = token;
         this.selectedRootDirectory = "";
 
         this.servers = null;
@@ -28,7 +28,7 @@ class RTC {
     }
 
     connectToClients() {
-        this.socket.emit("connectToClients", this.providerName);
+        this.socket.emit("connectToClients", this.token);
     }
 
     initializeP2PConnection(client) {

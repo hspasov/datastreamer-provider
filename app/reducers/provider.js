@@ -1,9 +1,9 @@
-const reducer = (state={username: null}, action) => {
+const reducer = (state={token: null}, action) => {
     switch (action.type) {
         case "LOGIN_PROVIDER": {
             return {
                 ...state,
-                username: action.payload.username
+                token: action.payload.token
             };
         }
     }
