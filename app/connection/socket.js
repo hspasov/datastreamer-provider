@@ -4,9 +4,8 @@ import Client from "../modules/client";
 class Socket {
     constructor(RTC, token) {
         this.RTC = RTC;
-        this.socket = io("https://datastreamer.local:3000", {
-            query: `token=${token}`,
-            secure: true
+        this.socket = io("http://datastreamer.local:3000", {
+            query: `token=${token}`
         });
 
         this.socket.on("unsubscribedClient", clientId => {

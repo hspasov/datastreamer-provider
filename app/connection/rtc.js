@@ -28,7 +28,7 @@ class RTC {
     }
 
     connectToClients() {
-        this.socket.emit("connectToClients", this.token);
+        this.socket.emit("connectToClients");
     }
 
     initializeP2PConnection(client) {
@@ -38,7 +38,7 @@ class RTC {
             client.peerConnection.onicecandidate = event => {
                 console.log("local ice callback");
                 if (event.candidate) {
-                    this.socket.emit("sendICECandidate", "client", client.id, event.candidate);
+                    this.socket.emit("sendICECandidate", event.candidate, client.id);
                 }
             };
 
