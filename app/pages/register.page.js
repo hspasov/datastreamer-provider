@@ -49,7 +49,7 @@ class Register extends React.Component {
             username: this.state.username,
             password: this.state.password
         };
-        fetch("http://localhost:3000/provider/register", {
+        fetch("https://datastreamer.local:3000/provider/register", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)

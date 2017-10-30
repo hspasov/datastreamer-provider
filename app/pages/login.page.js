@@ -36,7 +36,7 @@ class Login extends React.Component {
             username: this.state.username,
             password: this.state.password
         };
-        fetch("http://localhost:3000/provider/login", {
+        fetch("https://datastreamer.local:3000/provider/login", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
