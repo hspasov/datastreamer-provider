@@ -54,3 +54,15 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     event.preventDefault();
     callback(true);
 });
+
+exports.openWindow = () => {
+    const win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        show: false,
+        parent: mainWindow
+    });
+    win.loadURL(url.format({
+        pathname: path.join(__dirname, "modules", "provider-unit.html")
+    }));
+};

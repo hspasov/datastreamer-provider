@@ -1,5 +1,5 @@
 import React from "react";
-import { Navbar, Button } from "react-bootstrap";
+import { Button } from "semantic-ui-react";
 
 class AppContainer extends React.Component {
     constructor(props) {
@@ -17,31 +17,18 @@ class AppContainer extends React.Component {
     render() {
         return (
             <div>
-                <Navbar fluid>
-                    <Navbar.Header>
-                        <Navbar.Brand>
-                            <a href="#">DataStreamer</a>
-                        </Navbar.Brand>
-                        <Button
-                            bsStyle="primary"
-                            className="btn-margin"
-                            onClick={this.goTo.bind(this, "datawatcher")}>
-                            DataWatcher
-                        </Button>
-                        <Button
-                            bsStyle="primary"
-                            className="btn-margin"
-                            onClick={this.goTo.bind(this, "register")}>
-                            Register
-                        </Button>
-                        <Button
-                            bsStyle="primary"
-                            className="btn-margin"
-                            onClick={this.goTo.bind(this, "login")}>
-                            Login
-                        </Button>
-                    </Navbar.Header>
-                </Navbar>
+                <Button
+                    onClick={this.goTo.bind(this, "datawatcher")}>
+                    DataWatcher
+                </Button>
+                <Button
+                    onClick={this.goTo.bind(this, "register")}>
+                    Register
+                </Button>
+                <Button
+                    onClick={this.goTo.bind(this, "login")}>
+                    Login
+                </Button>
             </div>
         );
     }
