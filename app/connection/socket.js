@@ -5,7 +5,8 @@ class Socket {
     constructor(RTC, token) {
         this.RTC = RTC;
         this.socket = io("https://datastreamer.local:3000", {
-            query: `token=${token}`
+            query: `token=${token}`,
+            secure: true
         });
 
         this.socket.on("unsubscribedClient", clientId => {

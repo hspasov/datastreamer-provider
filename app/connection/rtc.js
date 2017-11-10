@@ -2,9 +2,14 @@ import mime from "mime";
 import fileExtension from "file-extension";
 import Socket from "./socket";
 import scanDirectory from "../modules/scanDirectory";
+import { ipcRenderer, remote } from "electron";
+import { fs } from "fs";
 
-const fs = window.require("fs");
 const pathModule = window.require("path");
+
+ipcRenderer.on("inside unit", () => {
+    console.log("received message fired from unit!");
+});
 
 class RTC {
     constructor(token) {
@@ -25,6 +30,11 @@ class RTC {
         this.processMessage = this.processMessage.bind(this);
         this.deleteP2PConnection = this.deleteP2PConnection.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
+
+        console.log("before emitting test");
+        this.socket.emit("test");
+        ipcRenderer.send("inside bundle");
+        console.log("after emitting test");
     }
 
     connectToClients() {

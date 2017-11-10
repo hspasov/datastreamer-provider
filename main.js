@@ -5,6 +5,7 @@ require("electron-reload")(__dirname);
 const electron = require("electron");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
+const ipcMain = electron.ipcMain;
 
 const path = require("path");
 const url = require("url");
@@ -53,6 +54,14 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     // and we then say "it is all fine - true" to the callback
     event.preventDefault();
     callback(true);
+});
+
+ipcMain.on("inside unit", () => {
+    console.log("inside unit fired");
+});
+
+ipcMain.on("inside bundle", () => {
+    console.log("inside bundle fired");
 });
 
 exports.openWindow = () => {
