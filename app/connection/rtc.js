@@ -2,9 +2,11 @@ import mime from "mime";
 import fileExtension from "file-extension";
 import Socket from "./socket";
 import scanDirectory from "../modules/scanDirectory";
-import { ipcRenderer, remote } from "electron";
-import { fs } from "fs";
 
+const electron = window.require("electron");
+const ipcRenderer = electron.ipcRenderer;
+const remote = electron.remote;
+const fs = window.require("fs");
 const pathModule = window.require("path");
 
 ipcRenderer.on("inside unit", () => {
