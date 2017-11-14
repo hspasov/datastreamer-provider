@@ -59,19 +59,3 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
 ipcMain.on("inside unit", () => {
     console.log("inside unit fired");
 });
-
-ipcMain.on("inside bundle", () => {
-    console.log("inside bundle fired");
-});
-
-exports.openWindow = () => {
-    const win = new BrowserWindow({
-        width: 800,
-        height: 600,
-        show: false,
-        parent: mainWindow
-    });
-    win.loadURL(url.format({
-        pathname: path.join(__dirname, "modules", "provider-unit.html")
-    }));
-};

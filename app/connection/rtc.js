@@ -9,10 +9,6 @@ const remote = electron.remote;
 const fs = window.require("fs");
 const pathModule = window.require("path");
 
-ipcRenderer.on("inside unit", () => {
-    console.log("received message fired from unit!");
-});
-
 class RTC {
     constructor(token) {
         this.socket = new Socket(this, token).socket;
@@ -33,10 +29,7 @@ class RTC {
         this.deleteP2PConnection = this.deleteP2PConnection.bind(this);
         this.deleteSession = this.deleteSession.bind(this);
 
-        console.log("before emitting test");
-        this.socket.emit("test");
-        ipcRenderer.send("inside bundle");
-        console.log("after emitting test");
+        const unit = window.open("app/modules/provider-unit.html", "unit", "show=no");
     }
 
     connectToClients() {
