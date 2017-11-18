@@ -1,46 +1,46 @@
 const pathModule = window.require("path");
 const chokidar = window.require("chokidar");
 
-export default function scanDirectory(client, rootDirectory, sendMessage) {
+export default function scanDirectory() {
     let isCurrentDirectory = true;
-    const path = pathModule.join(rootDirectory, client.currentDirectory);
-    client.setWatcher(chokidar.watch(path, client.watcherOptions));
+    const path = pathModule.join(this.selectedRootDirectory, this.currentDirectory);
+    this.setWatcher(chokidar.watch(path, this.watcherOptions));
 
-    client.watcher
+    this.watcher
         .on("raw", (event, path, details) => {
             // This event should be triggered everytime something happens.
             console.log("Raw event info:", event, path, details);
         })
         .on("add", (path, stats) => {
-            client.changeScannedFiles(path, stats);
-            sendMessage(client, "add", client.scannedFiles.get(path));
+            this.changeScannedFiles(path, stats);
+            this.sendMessage("add", this.scannedFiles.get(path));
         })
         .on("addDir", (path, stats) => {
-            client.changeScannedFiles(path, stats, isCurrentDirectory);
+            this.changeScannedFiles(path, stats, isCurrentDirectory);
             if (isCurrentDirectory) {
                 isCurrentDirectory = false;
-                sendMessage(client, "sendCurrentDirectory", client.scannedFiles.get(path));
+                this.sendMessage("sendCurrentDirectory", this.scannedFiles.get(path));
             } else {
-                sendMessage(client, "addDir", client.scannedFiles.get(path));
+                this.sendMessage("addDir", this.scannedFiles.get(path));
             }
         })
         .on("change", (path, stats) => {
-            client.changeScannedFiles(path, stats);
-            sendMessage(client, "change", client.scannedFiles.get(path));
+            this.changeScannedFiles(path, stats);
+            this.sendMessage("change", this.scannedFiles.get(path));
         })
         .on("unlink", path => {
-            sendMessage(client, "unlink", client.scannedFiles.get(path));
-            client.removeFromScannedFiles(path);
+            this.sendMessage("unlink", this.scannedFiles.get(path));
+            this.removeFromScannedFiles(path);
         })
         .on("unlinkDir", path => {
-            sendMessage(client, "unlinkDir", client.scannedFiles.get(path));
-            client.removeFromScannedFiles(path);
+            this.sendMessage("unlinkDir", this.scannedFiles.get(path));
+            this.removeFromScannedFiles(path);
         })
         .on("error", error => {
             console.log("Error happened", error);
         })
         .on("ready", () => {
             console.info("Initial scan has been completed.");
-            sendMessage(client, "doneSending");
+            this.sendMessage("doneSending");
         });
 }

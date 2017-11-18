@@ -2,10 +2,10 @@
 
 require("electron-reload")(__dirname);
 
+const ipcHandler = require("./ipcHandler");
 const electron = require("electron");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-const ipcMain = electron.ipcMain;
 
 const path = require("path");
 const url = require("url");
@@ -13,6 +13,7 @@ const url = require("url");
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+const providerUnits = new Map();
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({ width: 800, height: 600 });
@@ -29,6 +30,7 @@ const createWindow = () => {
         // when you should delete the corresponding element.
         mainWindow = null;
     });
+    ipcHandler(mainWindow);
 }
 app.on("ready", createWindow);
 
@@ -54,8 +56,4 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
     // and we then say "it is all fine - true" to the callback
     event.preventDefault();
     callback(true);
-});
-
-ipcMain.on("inside unit", () => {
-    console.log("inside unit fired");
 });

@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import RTC from "../connection/rtc";
+import ConnectorMain from "../modules/connectorMain";
 
 const dialog = window.require("electron").dialog;
 
@@ -8,27 +8,27 @@ class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
 
+        this.connector = new ConnectorMain(this.props.provider.token);
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
-        this.RTC = new RTC(this.props.provider.token);
     }
 
     componentDidMount() {
         if (this.props.provider.token) {
-            window.addEventListener("beforeunload", this.deleteSession);
+            window.addEventListener("beforeunload", this.deleteAll);
         }
-        this.RTC.connectToClients();
+        this.connector.connectToClients();
     }
 
     componentWillUnmount() {
         if (this.props.provider.token) {
-            this.RTC.deleteSession();
-            window.removeEventListener("beforeunload", this.deleteSession);
+            this.connector.deleteAll();
+            window.removeEventListener("beforeunload", this.deleteAll);
         }
     }
 
     initializeScan() {
-        this.RTC.initializeScan();
+        this.connector.initializeScan();
     }
 
     _addDirectory(node) {
@@ -46,7 +46,7 @@ class DataWatcher extends React.Component {
     handleSelectRootDirectory(event) {
         if (event.target.files[0]) {
             let dirPath = event.target.files[0].path;
-            this.RTC.selectedRootDirectory = dirPath; // <- very ugly, change it
+            this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
         }
     }
 
