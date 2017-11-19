@@ -7,10 +7,12 @@ const ipcMain = electron.ipcMain;
 function ipcHandler(mainWindow) {
     const units = new Map();
 
-    ipcMain.on("create unit", (clientId, selectedRootDirectory) => {
+    ipcMain.on("create unit", (event, clientId, selectedRootDirectory) => {
+        console.log(clientId);
+        console.log(selectedRootDirectory);
         units.set(clientId, new BrowserWindow({
             parent: mainWindow,
-            show: true
+            show: false
         }));
         let unit = units.get(clientId);
         unit.webContents.openDevTools();
@@ -19,36 +21,41 @@ function ipcHandler(mainWindow) {
             protocol: "file:",
             slashes: true
         }));
-        unit.webContents.send("initialize", clientId, selectedRootDirectory);
+        unit.once("ready-to-show", () => {
+            console.log("ready to show");
+            unit.show();
+            unit.webContents.send("initialize", clientId, selectedRootDirectory);
+        });
     });
 
-    ipcMain.on("receive description", (clientId, description) => {
+    ipcMain.on("receive description", (event, clientId, description) => {
         let unit = units.get(clientId);
         unit.webContents.send("receive description", description);
     });
 
-    ipcMain.on("send description", (clientId, description) => {
+    ipcMain.on("send description", (event, clientId, description) => {
+        console.log("inside send description, with desc=", description);
         mainWindow.webContents.send("send description", clientId, description);
     });
 
-    ipcMain.on("request P2P connection", clientId => {
+    ipcMain.on("request P2P connection", (event, clientId, arg) => {
         mainWindow.webContents.send("request P2P connection", clientId);
     });
 
-    ipcMain.on("send ICE candidate", (clientId, candidate) => {
+    ipcMain.on("send ICE candidate", (event, clientId, candidate) => {
         mainWindow.webContents.send("send ICE candidate", clientId, candidate);
     });
 
-    ipcMain.on("receive ICE candidate", (clientId, candidate) => {
+    ipcMain.on("receive ICE candidate", (event, clientId, candidate) => {
         let unit = units.get(clientId);
         unit.webContents.send("receive ICE candidate", candidate);
     });
 
-    ipcMain.on("reset connection", clientId => {
+    ipcMain.on("reset connection", (event, clientId) => {
         mainWindow.webContents.send("reset connection", clientId);
     });
 
-    ipcMain.on("initialize scan", selectedRootDirectory => {
+    ipcMain.on("initialize scan", (event, selectedRootDirectory) => {
         units.forEach(unit => {
             unit.webContents.send("initialize scan", selectedRootDirectory);
         });
@@ -63,7 +70,7 @@ function ipcHandler(mainWindow) {
         mainWindow.webContents.send("pong", arg);
     });
 
-    ipcMain.on("delete client", (clientId, error) => {
+    ipcMain.on("delete client", (event, clientId, error) => {
         let unit = units.get(clientId);
         unit.webContents.send("delete client", error);
         unit = null;

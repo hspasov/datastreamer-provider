@@ -3,32 +3,23 @@ const ipcRenderer = electron.ipcRenderer;
 
 class ConnectorUnit {
     constructor(client) {
-        ipcRenderer.on("ping", (event, arg) => {
-            console.log(arg);
-            ipcRenderer.send("pong", "Hello from unit!");
-            let start = new Date().getTime();
-            let i = 0;
-            while (i < 10 * 10 * 10 * 10 * 100 * 10 * 10 * 10 * 10) {
-                i = i + 1;
-            }
-            console.log(i);
-            console.log(new Date().getTime() - start);
+        this.client = client;
+        ipcRenderer.on("delete client", (event, error=null) => {
+            this.client.deleteP2PConnection(error);
         });
 
-        ipcRenderer.on("delete client", (error=null) => {
-            client.deleteP2PConnection(error);
+        ipcRenderer.on("receive description", (event, remoteDescription) => {
+            console.log(remoteDescription);
+            this.client.exchangeDescriptions(JSON.parse(remoteDescription));
         });
 
-        ipcRenderer.on("receive description", remoteDescription => {
-            client.exchangeDescriptions(remoteDescription);
+        ipcRenderer.on("receive ICE candidate", (event, candidate) => {
+            console.log(candidate);
+            this.client.receiveICECandidate(JSON.parse(candidate));
         });
 
-        ipcRenderer.on("receive ICE candidate", candidate => {
-            client.receiveICECandidate(candidate);
-        });
-
-        ipcRenderer.on("initialize scan", selectedRootDirectory => {
-            client.initializeScan(selectedRootDirectory);
+        ipcRenderer.on("initialize scan", (event, selectedRootDirectory) => {
+            this.client.initializeScan(selectedRootDirectory);
         });
 
         ipcRenderer.send("inside unit");
@@ -38,23 +29,25 @@ class ConnectorUnit {
     }
 
     requestP2PConnection() {
-        ipcRenderer.send("request P2P connection", client.id);
+        ipcRenderer.send("request P2P connection", this.client.id);
+        console.log("sent request P2P connection with this.client.id=", this.client.id);
     }
 
     sendDescription(localDescription) {
-        ipcRenderer.send("send description", client.id, localDescription);
+        console.log("inside sendDescription with desc=", localDescription);
+        ipcRenderer.send("send description", this.client.id, JSON.stringify(localDescription));
     }
 
     sendICECandidate(candidate) {
-        ipcRenderer.send("send ICE candidate", client.id, candidate);
+        ipcRenderer.send("send ICE candidate", this.client.id, candidate);
     }
 
     resetConnection() {
-        ipcRenderer.send("reset connection", client.id);
+        ipcRenderer.send("reset connection", this.client.id);
     }
 
     deleteClient(error=null) {
-        ipcRenderer.send("delete client", client.id, error);
+        ipcRenderer.send("delete client", this.client.id, error);
     }
 }
 

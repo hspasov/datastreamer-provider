@@ -21,19 +21,20 @@ class ConnectorMain {
         //     ipcRenderer.send("ping", "Hello from rtc!");
         // }, 2000);
 
-        ipcRenderer.on("send description", (clientId, description) => {
+        ipcRenderer.on("send description", (event, clientId, description) => {
+            console.log("inside send description with desc=", description);
             this.socket.emit("connectToClient", clientId, description);
         });
 
-        ipcRenderer.on("send ICE candidate", (clientId, candidate) => {
+        ipcRenderer.on("send ICE candidate", (event, clientId, candidate) => {
             this.socket.emit("sendICECandidate", candidate, clientId);
         });
 
-        ipcRenderer.on("request P2P connection", clientId => {
+        ipcRenderer.on("request P2P connection", (event, clientId) => {
             this.socket.emit("requestP2PConnection", clientId);
         });
 
-        ipcRenderer.on("reset connection", clientId => {
+        ipcRenderer.on("reset connection", (event, clientId) => {
             this.socket.emit("resetClientConnection", clientId);
         });
     }

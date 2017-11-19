@@ -81,6 +81,7 @@ class Client {
         } catch (e) {
             if (!this.sendMessageChannel || !this.receiveMessageChannel || !this.peerConnection) {
                 console.log("Connection with client lost");
+                console.log(e);
             } else {
                 throw e;
             }
@@ -92,7 +93,7 @@ class Client {
             this.peerConnection.setRemoteDescription(remoteDesctiption);
             this.peerConnection.createAnswer().then(localDescription => {
                 this.peerConnection.setLocalDescription(localDescription);
-                console.log("Answer from remoteConnection \n" + description.sdp);
+                console.log("Answer from remoteConnection \n" + localDescription.sdp);
                 this.connector.sendDescription(localDescription);
             }, error => {
                 console.log("there was an error while creating an answer", error);
@@ -171,12 +172,12 @@ class Client {
 
     sendMessage(action, data) {
         try {
-            client.sendMessageChannel.send(JSON.stringify({
+            this.sendMessageChannel.send(JSON.stringify({
                 action: action,
                 data: data
             }));
         } catch (e) {
-            if (!client.sendMessageChannel) {
+            if (!this.sendMessageChannel) {
                 console.log("Can't finish task. Connection to provider lost.");
             } else {
                 throw e;
