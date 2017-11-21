@@ -12,15 +12,6 @@ class ConnectorMain {
         this.connectToClients = this.connectToClients.bind(this);
         this.deleteAll = this.deleteAll.bind(this);
 
-        // ipcRenderer.send("create unit");
-
-        // ipcRenderer.on("pong", (event, arg) => {
-        //     console.log(arg);
-        // });
-        // setTimeout(() => {
-        //     ipcRenderer.send("ping", "Hello from rtc!");
-        // }, 2000);
-
         ipcRenderer.on("send description", (event, clientId, description) => {
             console.log("inside send description with desc=", description);
             this.socket.emit("connectToClient", clientId, description);
