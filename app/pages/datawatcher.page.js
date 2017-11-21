@@ -15,7 +15,7 @@ class DataWatcher extends React.Component {
 
     componentDidMount() {
         if (this.props.provider.token) {
-            window.addEventListener("beforeunload", this.deleteAll);
+            window.addEventListener("beforeunload", this.connector.deleteAll);
         }
         this.connector.connectToClients();
     }
@@ -23,7 +23,7 @@ class DataWatcher extends React.Component {
     componentWillUnmount() {
         if (this.props.provider.token) {
             this.connector.deleteAll();
-            window.removeEventListener("beforeunload", this.deleteAll);
+            window.removeEventListener("beforeunload", this.connector.deleteAll);
         }
     }
 

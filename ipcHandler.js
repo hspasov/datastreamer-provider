@@ -5,11 +5,9 @@ const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
 
 function ipcHandler(mainWindow) {
-    const units = new Map();
+    let units = new Map();
 
     ipcMain.on("create unit", (event, clientId, selectedRootDirectory) => {
-        console.log(clientId);
-        console.log(selectedRootDirectory);
         units.set(clientId, new BrowserWindow({
             parent: mainWindow,
             show: false
@@ -22,7 +20,6 @@ function ipcHandler(mainWindow) {
             slashes: true
         }));
         unit.once("ready-to-show", () => {
-            console.log("ready to show");
             unit.show();
             unit.webContents.send("initialize", clientId, selectedRootDirectory);
         });
@@ -34,7 +31,6 @@ function ipcHandler(mainWindow) {
     });
 
     ipcMain.on("send description", (event, clientId, description) => {
-        console.log("inside send description, with desc=", description);
         mainWindow.webContents.send("send description", clientId, description);
     });
 
@@ -61,18 +57,10 @@ function ipcHandler(mainWindow) {
         });
     });
 
-    ipcMain.on("inside unit", () => {
-        console.log("inside unit fired");
-    });
-
-    ipcMain.on("pong", (event, arg) => {
-        console.log("inside pong fired");
-        mainWindow.webContents.send("pong", arg);
-    });
-
     ipcMain.on("delete client", (event, clientId, error) => {
         let unit = units.get(clientId);
         unit.webContents.send("delete client", error);
+        unit.close();
         unit = null;
         units.delete(clientId);
     });
