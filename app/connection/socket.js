@@ -23,8 +23,9 @@ class Socket {
         });
 
         this.socket.on("resetConnection", clientId => {
-            const client = this.connector.clients.get(clientId);
-            this.connector.deleteClient(client);
+            console.log("inside resetConnection, leaving");
+            return;
+            this.connector.deleteClient(clientId);
             this.connector.createUnit(clientId, this.connector.selectedRootDirectory);
         });
 

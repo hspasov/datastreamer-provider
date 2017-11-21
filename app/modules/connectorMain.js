@@ -27,6 +27,7 @@ class ConnectorMain {
         });
 
         ipcRenderer.on("send ICE candidate", (event, clientId, candidate) => {
+            console.log(`Sending ICE candidate ${candidate} to ${clientId}`);
             this.socket.emit("sendICECandidate", candidate, clientId);
         });
 

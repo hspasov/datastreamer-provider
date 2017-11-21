@@ -39,7 +39,7 @@ class ConnectorUnit {
     }
 
     sendICECandidate(candidate) {
-        ipcRenderer.send("send ICE candidate", this.client.id, candidate);
+        ipcRenderer.send("send ICE candidate", this.client.id, JSON.stringify(candidate));
     }
 
     resetConnection() {

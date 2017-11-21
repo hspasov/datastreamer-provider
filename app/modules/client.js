@@ -53,11 +53,13 @@ class Client {
             this.peerConnection.onicecandidate = event => {
                 console.log("local ice callback");
                 if (event.candidate) {
+                    console.log("sending ice candidate", event.candidate);
                     this.connector.sendICECandidate(event.candidate);
                 }
             };
 
             this.peerConnection.ondatachannel = event => {
+                console.log("there is data channel");
                 this.receiveMessageChannel = event.channel;
                 this.receiveMessageChannel.onmessage = event => {
                     this.processMessage(JSON.parse(event.data));
@@ -90,6 +92,7 @@ class Client {
 
     exchangeDescriptions(remoteDesctiption) {
         try {
+            console.log("setting remote description", remoteDesctiption);
             this.peerConnection.setRemoteDescription(remoteDesctiption);
             this.peerConnection.createAnswer().then(localDescription => {
                 this.peerConnection.setLocalDescription(localDescription);
@@ -110,6 +113,7 @@ class Client {
 
     receiveICECandidate(candidate) {
         try {
+            console.log("adding ice candidate", candidate);
             this.peerConnection.addIceCandidate(candidate).then(() => { }, error => {
                 console.log("failed to add candidate", error);
                 this.connector.deleteClient(error);
