@@ -1,5 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
+import { push } from "react-router-redux";
+import { Link } from "react-router-dom";
+import { Button } from "semantic-ui-react";
 import loginProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
 
@@ -48,7 +51,7 @@ class Login extends React.Component {
             }
         }).then(json => {
             this.props.dispatch(loginProvider(json));
-            this.props.history.push("/datawatcher");
+            this.props.dispatch(push("/datawatcher"));
         }).catch(error => {
             console.log(error);
         });
@@ -57,6 +60,18 @@ class Login extends React.Component {
     render() {
         return (
             <div>
+                <Link
+                    to="/datawatcher">
+                    DataWatcher
+                </Link>
+                <Link
+                    to="/register">
+                    Register
+                </Link>
+                <Link
+                    to="/login">
+                    Login
+                </Link>
                 <input type="text" placeholder="Name: " onChange={this.handleUsernameChange} />
                 <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
                 <button onClick={this.handleSubmit}>Login</button>

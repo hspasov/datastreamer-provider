@@ -24,8 +24,8 @@ function prepareConnectionInitialization() {
 
         this.sendMessageChannel.onopen = () => {
             this.sendMessageChannel.send(JSON.stringify({
-                action: "message",
-                message: "It works, from provider"
+                action: "connectSuccess",
+                message: null
             }));
             if (this.selectedRootDirectory) {
                 this.scanDirectory();

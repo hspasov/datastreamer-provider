@@ -1,7 +1,5 @@
 "use strict";
 
-require("electron-reload")(__dirname);
-
 const ipcHandler = require("./ipcHandler");
 const electron = require("electron");
 const app = electron.app;
@@ -9,6 +7,10 @@ const BrowserWindow = electron.BrowserWindow;
 
 const path = require("path");
 const url = require("url");
+
+require("electron-reload")(__dirname, {
+    electron: path.join(__dirname, "node_modules", ".bin", "electron")
+});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

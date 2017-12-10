@@ -1,37 +1,36 @@
 import React from "react";
 import { Button } from "semantic-ui-react";
+import { Route, Switch } from "react-router-dom";
+import { push } from "react-router-redux";
+import { connect } from "react-redux";
 
-class AppContainer extends React.Component {
+import DataWatcherPage from "../pages/datawatcher.page";
+import LoginPage from "../pages/login.page";
+import RegisterPage from "../pages/register.page";
+
+class App extends React.Component {
     constructor(props) {
         super(props);
     }
 
     componentDidMount() {
-        this.props.history.push("/login");
-    }
-
-    goTo(route) {
-        this.props.history.push(`${route}`);
+        this.props.dispatch(push("/login"));
     }
 
     render() {
-        return (
-            <div>
-                <Button
-                    onClick={this.goTo.bind(this, "datawatcher")}>
-                    DataWatcher
-                </Button>
-                <Button
-                    onClick={this.goTo.bind(this, "register")}>
-                    Register
-                </Button>
-                <Button
-                    onClick={this.goTo.bind(this, "login")}>
-                    Login
-                </Button>
-            </div>
-        );
+        return <Switch>
+            <Route path="/datawatcher" component={DataWatcherPage} />
+            <Route path="/login" component={LoginPage} />
+            <Route path="/register" component={RegisterPage} />
+        </Switch>;
     }
 }
 
-export default AppContainer
+const AppContainer = connect(store => {
+    return {
+        provider: store.provider,
+        router: store.router
+    };
+})(App);
+
+export default AppContainer;
