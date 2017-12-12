@@ -18,11 +18,13 @@ class App extends React.Component {
     }
 
     render() {
-        return <Switch>
-            <Route path="/datawatcher" component={DataWatcherPage} />
-            <Route path="/login" component={LoginPage} />
-            <Route path="/register" component={RegisterPage} />
-        </Switch>;
+        return <div id="page">
+            <Switch>
+                <Route path="/datawatcher" component={DataWatcherPage} />
+                <Route path="/login" component={LoginPage} />
+                <Route path="/register" component={RegisterPage} />
+            </Switch>
+        </div>;
     }
 }
 

@@ -2,9 +2,10 @@ import React from "react";
 import { connect } from "react-redux";
 import { push } from "react-router-redux";
 import { Link } from "react-router-dom";
-import { Button } from "semantic-ui-react";
+import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import loginProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
+import { Helmet } from "react-helmet";
 
 class Login extends React.Component {
     constructor(props) {
@@ -58,25 +59,60 @@ class Login extends React.Component {
     }
 
     render() {
-        return (
-            <div>
-                <Link
-                    to="/datawatcher">
-                    DataWatcher
-                </Link>
-                <Link
-                    to="/register">
-                    Register
-                </Link>
-                <Link
-                    to="/login">
-                    Login
-                </Link>
-                <input type="text" placeholder="Name: " onChange={this.handleUsernameChange} />
-                <input type="password" placeholder="Password: " onChange={this.handlePasswordChange} />
-                <button onClick={this.handleSubmit}>Login</button>
-            </div>
-        );
+        return <div className="login-form">
+            {/*
+      Heads up! The styles below are necessary for the correct render of this example.
+      You can do same with CSS, the main idea is that all the elements up to the `Grid`
+      below must have a height of 100%.
+    */}
+            <Helmet><style>{`
+      body > div,
+      body > div > div,
+      body > div > div > div.login-form {
+        height: 100%;
+      }
+    `}</style></Helmet>
+            <Grid style={{ height: "100%" }} verticalAlign="top">
+                <Grid.Row columns={2}>
+                    <Grid.Column textAlign="left">
+                        <Header>Datastreamer</Header>
+                    </Grid.Column>
+                    <Grid.Column textAlign="right">
+                        <Link to="/register"><Header color="blue"><Icon corner name="plus" />Create provider</Header></Link>
+                    </Grid.Column>
+                </Grid.Row>
+
+                <Grid.Row centered>
+                    <Grid.Column style={{ maxWidth: 450 }} textAlign="center">
+                        <Header as="h2" color="black" textAlign="center">
+                            Log-in to your account
+                        </Header>
+                        <Form size="massive">
+                            <Segment>
+                                <Form.Input
+                                    fluid
+                                    icon="user"
+                                    iconPosition="left"
+                                    placeholder="Username"
+                                    required
+                                    onChange={this.handleUsernameChange}
+                                />
+                                <Form.Input
+                                    fluid
+                                    icon="lock"
+                                    iconPosition="left"
+                                    placeholder="Password"
+                                    type="password"
+                                    required
+                                    onChange={this.handlePasswordChange}
+                                />
+                                <Button color="black" fluid size="large" onClick={this.handleSubmit}>Login</Button>
+                            </Segment>
+                        </Form>
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </div>;
     }
 }
 

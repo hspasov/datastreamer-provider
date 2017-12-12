@@ -1,5 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
+import { Button, Grid, Header, Tab } from "semantic-ui-react";
 import ConnectorMain from "../modules/connectorMain";
 
 const dialog = window.require("electron").dialog;
@@ -7,6 +8,10 @@ const dialog = window.require("electron").dialog;
 class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            selectedRootDirectory: "NaN"
+        };
 
         this.connector = new ConnectorMain(this.props.provider.token);
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
@@ -47,6 +52,7 @@ class DataWatcher extends React.Component {
         if (event.target.files[0]) {
             let dirPath = event.target.files[0].path;
             this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
+            this.setState({ selectedRootDirectory: dirPath });
         }
     }
 
@@ -56,12 +62,34 @@ class DataWatcher extends React.Component {
                 <p>Please login or register.</p>
             );
         }
-        return (
-            <div>
-                <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
-                <button id="scanDirectory" onClick={this.initializeScan}>Scan Directory</button>
-            </div>
-        );
+
+        const settings = <div>
+            <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
+            <Button onClick={this.initializeScan}>Scan Directory</Button>
+            <Header>Main directory path:</Header>
+            <p>{this.state.selectedRootDirectory}</p>
+        </div>;
+
+        const clients = <div>
+            <p>Empty</p>
+        </div>;
+
+        const panes = [
+            { menuItem: "Settings", render: () => settings },
+            { menuItem: "Clients", render: () => clients }
+        ];
+        return <Grid style={{ height: "100%" }} verticalAlign="top">
+            <Grid.Row textAlign="center">
+                <Grid.Column>
+                    <Header>DataStreamer</Header>
+                </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+                <Grid.Column>
+                    <Tab menu={{ fluid: true, vertical: true, tabular: true }} panes={panes} />
+                </Grid.Column>
+            </Grid.Row>
+        </Grid>;
     }
 }
 
