@@ -1,7 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button, Grid, Header, Tab } from "semantic-ui-react";
+import { Button, Grid, Header, Message, Tab } from "semantic-ui-react";
 import ConnectorMain from "../modules/connectorMain";
+import { Redirect } from "react-router";
 
 const dialog = window.require("electron").dialog;
 
@@ -10,12 +11,16 @@ class DataWatcher extends React.Component {
         super(props);
 
         this.state = {
-            selectedRootDirectory: "NaN"
+            selectedRootDirectory: "N/A",
+            isErrorState: true,
+            status: "Online",
+            statusMessage: "Please select a root directory!"
         };
 
-        this.connector = new ConnectorMain(this.props.provider.token);
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
+        this.statusHandler = this.statusHandler.bind(this);
+        this.connector = new ConnectorMain(this.props.provider.token, this.statusHandler);
     }
 
     componentDidMount() {
@@ -56,11 +61,56 @@ class DataWatcher extends React.Component {
         }
     }
 
+    statusHandler(status) {
+        switch (status.event) {
+            case "connect":
+                this.setState({
+                    isErrorState: false,
+                    status: "Online",
+                    statusMessage: ""
+                });
+                break;
+            case "connect_error":
+                this.setState({
+                    isErrorState: true,
+                    status: "Offline",
+                    statusMessage: "Can't connect to server."
+                });
+                break;
+            case "connect_timeout":
+                this.setState({
+                    isErrorState: true,
+                    status: "Offline",
+                    statusMessage: "Connect timeout."
+                });
+                break;
+            case "error":
+                this.setState({
+                    isErrorState: true,
+                    status: "Offline",
+                    statusMessage: "Error."
+                });
+                break;
+            case "disconnect":
+                this.setState({
+                    isErrorState: true,
+                    status: "Offline",
+                    statusMessage: "Disconnected."
+                });
+                break;
+            case "reconnect_failed":
+                this.setState({
+                    isErrorState: true,
+                    status: "Offline",
+                    statusMessage: "Reconnect failed."
+                });
+                break;
+        }
+    }
+
     render() {
         if (!this.props.provider.token) {
-            return (
-                <p>Please login or register.</p>
-            );
+            return <Redirect to="/login"></Redirect>;
         }
 
         const settings = <div>
@@ -68,6 +118,11 @@ class DataWatcher extends React.Component {
             <Button onClick={this.initializeScan}>Scan Directory</Button>
             <Header>Main directory path:</Header>
             <p>{this.state.selectedRootDirectory}</p>
+            <Header>Status:</Header>
+            <Message color={(this.state.isErrorState)? "red" : "olive"} compact>
+                <Message.Header>{this.state.status}</Message.Header>
+                <p>{this.state.statusMessage}</p>
+            </Message>
         </div>;
 
         const clients = <div>
@@ -78,6 +133,7 @@ class DataWatcher extends React.Component {
             { menuItem: "Settings", render: () => settings },
             { menuItem: "Clients", render: () => clients }
         ];
+
         return <Grid style={{ height: "100%" }} verticalAlign="top">
             <Grid.Row textAlign="center">
                 <Grid.Column>

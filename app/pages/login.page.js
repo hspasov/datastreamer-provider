@@ -6,6 +6,7 @@ import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-
 import loginProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
+import FormSubmitError from "../components/formSubmitError.component";
 
 class Login extends React.Component {
     constructor(props) {
@@ -13,7 +14,9 @@ class Login extends React.Component {
 
         this.state = {
             username: "",
-            password: ""
+            password: "",
+            hasFormErrors: false,
+            formErrors: []
         }
 
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
@@ -36,25 +39,44 @@ class Login extends React.Component {
     }
 
     handleSubmit() {
+        if (!(this.state.username && this.state.password)) {
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["empty"]
+            });
+            return;
+        }
+
+        this.setState({
+            hasFormErrors: false
+        });
+
         let formData = {
             username: this.state.username,
             password: this.state.password
         };
+
         fetch("https://datastreamer.local:3000/provider/login", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
         }).then(response => {
-            if (response.status == 409) {
-                throw "Authentication failed";
-            } else {
+            if (response.status == 200) {
                 return response.json();
+            } else {
+                this.setState({
+                    hasFormErrors: true,
+                    formErrors: ["validation"]
+                });
             }
         }).then(json => {
             this.props.dispatch(loginProvider(json));
             this.props.dispatch(push("/datawatcher"));
         }).catch(error => {
-            console.log(error);
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["connect"]
+            });
         });
     }
 
@@ -107,6 +129,7 @@ class Login extends React.Component {
                                     onChange={this.handlePasswordChange}
                                 />
                                 <Button color="black" fluid size="large" onClick={this.handleSubmit}>Login</Button>
+                                <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
                             </Segment>
                         </Form>
                     </Grid.Column>

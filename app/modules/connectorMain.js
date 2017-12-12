@@ -4,8 +4,8 @@ const electron = window.require("electron");
 const ipcRenderer = electron.ipcRenderer;
 
 class ConnectorMain {
-    constructor(token) {
-        this.socket = new Socket(this, token).socket;
+    constructor(token, statusHandler) {
+        this.socket = new Socket(this, token, statusHandler).socket;
 
         this.selectedRootDirectory = "";
         this.initializeScan = this.initializeScan.bind(this);

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import loginProvider from "../actions/provider";
 import formurlencoded from "form-urlencoded";
+import FormSubmitError from "../components/formSubmitError.component";
 
 class Register extends React.Component {
     constructor(props) {
@@ -13,7 +14,9 @@ class Register extends React.Component {
         this.state = {
             username: "",
             password: "",
-            confirmPassword: ""
+            confirmPassword: "",
+            hasFormErrors: false,
+            formErrors: []
         }
 
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
@@ -26,7 +29,7 @@ class Register extends React.Component {
         event.preventDefault();
         this.setState({
             username: event.target.value
-        })
+        });
     }
 
     handlePasswordChange(event) {
@@ -44,10 +47,22 @@ class Register extends React.Component {
     }
 
     handleSubmit() {
-        if (this.state.password != this.state.confirmPassword) {
-            console.log("Passwords don't match");
+        if (!(this.state.username && this.state.password)) {
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["empty"]
+            });
             return;
         }
+
+        if (this.state.password != this.state.confirmPassword) {
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["match"]
+            });
+            return;
+        }
+
         let formData = {
             username: this.state.username,
             password: this.state.password
@@ -57,16 +72,19 @@ class Register extends React.Component {
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
         }).then(response => {
-            if (response.status == 409) {
-                throw "Authentication failed";
-            } else {
+            if (response.status == 201) {
                 return response.json();
+            } else {
+                throw "Authentication failed";
             }
         }).then(json => {
             this.props.dispatch(loginProvider(json));
             this.props.history.push("/datawatcher");
         }).catch(error => {
-            console.log(error);
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["connect"]
+            });
         });
     }
 
@@ -128,6 +146,7 @@ class Register extends React.Component {
                                     onChange={this.handleConfirmPasswordChange}
                                 />
                                 <Button color="black" fluid size="large" onClick={this.handleSubmit}>Register</Button>
+                                <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
                             </Segment>
                         </Form>
                     </Grid.Column>
@@ -141,6 +160,6 @@ const RegisterPage = connect(store => {
     return {
         provider: store.provider
     };
-})(Register)
+})(Register);
 
 export default RegisterPage;
