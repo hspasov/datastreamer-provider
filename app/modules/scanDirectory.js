@@ -1,5 +1,7 @@
 const pathModule = window.require("path");
 const chokidar = window.require("chokidar");
+const Magic = window.require("promise-mmmagic");
+const magic = new Magic(Magic.MAGIC_MIME_TYPE);
 
 export default function scanDirectory() {
     let isCurrentDirectory = true;
@@ -12,21 +14,27 @@ export default function scanDirectory() {
             console.log("Raw event info:", event, path, details);
         })
         .on("add", (path, stats) => {
-            this.changeScannedFiles(path, stats);
-            this.sendMessage("add", this.scannedFiles.get(path));
+            magic.detectFile(path).then(mime => {
+                this.changeScannedFiles(path, stats, mime);
+                this.sendMessage("add", this.scannedFiles.get(path));
+            });
         })
         .on("addDir", (path, stats) => {
-            this.changeScannedFiles(path, stats, isCurrentDirectory);
-            if (isCurrentDirectory) {
-                isCurrentDirectory = false;
-                this.sendMessage("sendCurrentDirectory", this.scannedFiles.get(path));
-            } else {
-                this.sendMessage("addDir", this.scannedFiles.get(path));
-            }
+            magic.detectFile(path).then(mime => {
+                this.changeScannedFiles(path, stats, mime, isCurrentDirectory);
+                if (isCurrentDirectory) {
+                    isCurrentDirectory = false;
+                    this.sendMessage("sendCurrentDirectory", this.scannedFiles.get(path));
+                } else {
+                    this.sendMessage("addDir", this.scannedFiles.get(path));
+                }
+            });
         })
         .on("change", (path, stats) => {
-            this.changeScannedFiles(path, stats);
-            this.sendMessage("change", this.scannedFiles.get(path));
+            magic.detectFile(path).then(mime => {
+                this.changeScannedFiles(path, stats, mime );
+                this.sendMessage("change", this.scannedFiles.get(path));
+            });
         })
         .on("unlink", path => {
             this.sendMessage("unlink", this.scannedFiles.get(path));

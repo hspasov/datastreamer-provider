@@ -1,5 +1,6 @@
 import mime from "mime";
 import fileExtension from "file-extension";
+import bluebird from "bluebird";
 import ConnectorUnit from "./connectorUnit";
 import getFileType from "./getFileType";
 import getFilePermissions from "./getFilePermissions";
@@ -12,6 +13,11 @@ import {
 
 const fs = window.require("fs");
 const pathModule = window.require("path");
+const getImageSize = window.require("image-size");
+const resizeImg = window.require("resize-img");
+
+bluebird.promisifyAll(fs);
+const sizeOf = bluebird.promisify(getImageSize);
 
 class Client {
     constructor(id, selectedRootDirectory, currentDirectory = ".", watcherOptions = {
@@ -37,6 +43,7 @@ class Client {
         this.exchangeDescriptions = exchangeDescriptions.bind(this);
         this.receiveICECandidate = receiveICECandidate.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
+        this.sendThumbnail = this.sendThumbnail.bind(this);
         this.sendFile = this.sendFile.bind(this);
         this.sendMessage = this.sendMessage.bind(this);
         this.scanDirectory = scanDirectory.bind(this);
@@ -74,12 +81,24 @@ class Client {
         }
     }
 
+    sendThumbnail(filePath) {
+        const path = pathModule.join(this.selectedRootDirectory, filePath);
+        const size = sizeOf(path);
+        size.then(dimensions => {
+            return fs.readFileAsync(path);
+        }).then(image => {
+            const dimensions = size.value();
+            return resizeImg(image, { width: dimensions.width, height: dimensions.height });
+        }).then(resized => {
+            const result = fromByteArray(resized);
+            this.sendMessage("sendThumbnail", result);
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
     sendFile(filePath) {
         try {
-            this.sendMessage("sendFileMetadata", {
-                path: filePath,
-                mime: mime.getType(fileExtension(filePath))
-            });
             const path = pathModule.join(this.selectedRootDirectory, filePath);
             const readStream = fs.createReadStream(path);
             readStream.on("data", chunk => {
@@ -131,11 +150,11 @@ class Client {
         this.scannedFiles = new Map();
     }
 
-    changeScannedFiles(path, stats, isCurrentDirectory = false) {
+    changeScannedFiles(path, stats, mime, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path ${path}`;
         }
-        let fileMetadata = this.getFileMetadata(path, stats, isCurrentDirectory);
+        let fileMetadata = this.getFileMetadata(path, stats, mime, isCurrentDirectory);
         this.scannedFiles.set(path, fileMetadata);
     }
 
@@ -146,7 +165,7 @@ class Client {
         this.scannedFiles.delete(path);
     }
 
-    getFileMetadata(path, stats, isCurrentDirectory = false) {
+    getFileMetadata(path, stats, mime, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path, ${path}`;
         }
@@ -156,8 +175,10 @@ class Client {
             path: isCurrentDirectory ?
                 this.currentDirectory : pathModule.join(this.currentDirectory, fileName),
             type: getFileType(path, stats),
-            size: stats["size"],
-            access: getFilePermissions(path)
+            access: getFilePermissions(path),
+            size: stats.size,
+            mime,
+            thumbnail: ""
         };
     }
 
