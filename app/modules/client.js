@@ -5,6 +5,8 @@ import ConnectorUnit from "./connectorUnit";
 import getFileType from "./getFileType";
 import getFilePermissions from "./getFilePermissions";
 import scanDirectory from "../modules/scanDirectory";
+import BufferStream from "../modules/bufferStream";
+import scaleImageMeasures from "../modules/scaleImageMeasures"
 import {
     prepareConnectionInitialization,
     exchangeDescriptions,
@@ -38,6 +40,8 @@ class Client {
         this.servers = null;
         this.peerConnectionConstraint = null;
         this.dataConstraint = null;
+
+        this.readStream = null;
 
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
         this.exchangeDescriptions = exchangeDescriptions.bind(this);
@@ -75,6 +79,18 @@ class Client {
             case "downloadFile":
                 this.sendFile(message.filePath);
                 break;
+            case "getThumbnail":
+                this.sendThumbnail(message.filePath);
+                break;
+            case "readyForThumbnail":
+                this.readStream.on("data", chunk => {
+                    this.sendFileChannel.send(chunk);
+                });
+                this.readStream.on("end", () => {
+                    console.log("end of file streaming");
+                    this.readStream = null;
+                });
+                break;
             case "message":
                 console.log(message.message);
                 break;
@@ -84,14 +100,14 @@ class Client {
     sendThumbnail(filePath) {
         const path = pathModule.join(this.selectedRootDirectory, filePath);
         const size = sizeOf(path);
-        size.then(dimensions => {
+        size.then(measures => {
             return fs.readFileAsync(path);
         }).then(image => {
-            const dimensions = size.value();
-            return resizeImg(image, { width: dimensions.width, height: dimensions.height });
+            const measures = size.value();
+            return resizeImg(image, scaleImageMeasures(measures, 200));
         }).then(resized => {
-            const result = fromByteArray(resized);
-            this.sendMessage("sendThumbnail", result);
+            this.sendMessage("sendThumbnailSize", resized.length);
+            this.readStream = new BufferStream(resized);
         }).catch(error => {
             console.log(error);
         });
@@ -100,12 +116,13 @@ class Client {
     sendFile(filePath) {
         try {
             const path = pathModule.join(this.selectedRootDirectory, filePath);
-            const readStream = fs.createReadStream(path);
-            readStream.on("data", chunk => {
+            this.readStream = fs.createReadStream(path);
+            this.readStream.on("data", chunk => {
                 this.sendFileChannel.send(chunk);
             });
-            readStream.on("end", () => {
+            this.readStream.on("end", () => {
                 console.log("end of file streaming");
+                this.readStream = null;
             });
         } catch (e) {
             if (!this.sendFileChannel) {

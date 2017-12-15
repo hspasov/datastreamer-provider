@@ -36,6 +36,7 @@
     "history": "^4.7.2",
     "image-size": "^0.6.1",
     "ipc": "0.0.1",
+    "is-buffer": "^1.1.6",
     "mime": "^2.0.3",
     "promise-mmmagic": "0.0.2",
     "prop-types": "^15.5.10",
