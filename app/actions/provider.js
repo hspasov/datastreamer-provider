@@ -1,7 +1,7 @@
-const loginProvider = provider => {
+const loginProvider = providerData => {
     return {
         type: "LOGIN_PROVIDER",
-        payload: provider
+        payload: providerData
     }
 }
 

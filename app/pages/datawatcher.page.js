@@ -120,6 +120,8 @@ class DataWatcher extends React.Component {
         }
 
         const settings = <div>
+            <Header>This provider:</Header>
+            <p>{this.props.provider.username}</p>
             <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
             <Button onClick={this.initializeScan}>Scan Directory</Button>
             <Header>Main directory path:</Header>
