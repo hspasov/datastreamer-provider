@@ -11,6 +11,7 @@ class DataWatcher extends React.Component {
         super(props);
 
         this.state = {
+            clients: [],
             selectedRootDirectory: "N/A",
             isErrorState: true,
             status: "Online",
@@ -20,7 +21,8 @@ class DataWatcher extends React.Component {
         this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
         this.statusHandler = this.statusHandler.bind(this);
-        this.connector = new ConnectorMain(this.props.provider.token, this.statusHandler);
+        this.pageAccessor = this.pageAccessor.bind(this);
+        this.connector = new ConnectorMain(this.props.provider.token, this.pageAccessor);
     }
 
     componentDidMount() {
@@ -108,6 +110,10 @@ class DataWatcher extends React.Component {
         }
     }
 
+    pageAccessor(modify) {
+        modify.bind(this)();
+    }
+
     render() {
         if (!this.props.provider.token) {
             return <Redirect to="/login"></Redirect>;
@@ -126,7 +132,9 @@ class DataWatcher extends React.Component {
         </div>;
 
         const clients = <div>
-            <p>Empty</p>
+            {this.state.clients.map((client, i) => {
+                return <p key={i}>{client}</p>;
+            })}
         </div>;
 
         const panes = [
