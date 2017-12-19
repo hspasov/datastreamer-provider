@@ -5,7 +5,7 @@ const electron = require("electron");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
-const path = require("path");
+const path = require("path").posix;
 const url = require("url");
 
 require("electron-reload")(__dirname, {

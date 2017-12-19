@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require("path").posix;
 const url = require("url");
 const electron = require("electron");
 const BrowserWindow = electron.BrowserWindow;

@@ -14,7 +14,7 @@ import {
 } from "../connection/RTCInitialization";
 
 const fs = window.require("fs");
-const pathModule = window.require("path");
+const pathModule = window.require("path").posix;
 const getImageSize = window.require("image-size");
 const resizeImg = window.require("resize-img");
 

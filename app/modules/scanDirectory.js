@@ -1,4 +1,4 @@
-const pathModule = window.require("path");
+const pathModule = window.require("path").posix;
 const chokidar = window.require("chokidar");
 const Magic = window.require("promise-mmmagic");
 const magic = new Magic(Magic.MAGIC_MIME_TYPE);

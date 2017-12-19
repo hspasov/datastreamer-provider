@@ -1,4 +1,4 @@
-const path = require("path");
+const path = require("path").posix;
 
 module.exports = {
     entry: {
