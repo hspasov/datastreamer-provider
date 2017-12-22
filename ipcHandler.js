@@ -5,14 +5,15 @@ const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
 
 function ipcHandler(mainWindow) {
-    let units = new Map();
+    let socketIdUnitMap = new Map();
 
-    ipcMain.on("create unit", (event, clientId, selectedRootDirectory) => {
-        units.set(clientId, new BrowserWindow({
+    ipcMain.on("create unit", (event, unitData, selectedRootDirectory) => {
+        const browserWindow = new BrowserWindow({
             parent: mainWindow,
             show: false
-        }));
-        let unit = units.get(clientId);
+        });
+        socketIdUnitMap.set(unitData.clientSocketId, browserWindow);
+        let unit = socketIdUnitMap.get(unitData.clientSocketId);
         unit.webContents.openDevTools();
         unit.loadURL(url.format({
             pathname: path.join(__dirname, "app/modules/provider-unit.html"),
@@ -21,52 +22,52 @@ function ipcHandler(mainWindow) {
         }));
         unit.once("ready-to-show", () => {
             unit.show();
-            unit.webContents.send("initialize", clientId, selectedRootDirectory);
+            unit.webContents.send("initialize", unitData, selectedRootDirectory);
         });
     });
 
-    ipcMain.on("receive description", (event, clientId, description) => {
-        let unit = units.get(clientId);
+    ipcMain.on("receive description", (event, clientSocketId, description) => {
+        let unit = socketIdUnitMap.get(clientSocketId);
         unit.webContents.send("receive description", description);
     });
 
-    ipcMain.on("send description", (event, clientId, description) => {
-        mainWindow.webContents.send("send description", clientId, description);
+    ipcMain.on("send description", (event, clientSocketId, description) => {
+        mainWindow.webContents.send("send description", clientSocketId, description);
     });
 
-    ipcMain.on("request P2P connection", (event, clientId, arg) => {
-        mainWindow.webContents.send("request P2P connection", clientId);
+    ipcMain.on("request P2P connection", (event, clientSocketId, arg) => {
+        mainWindow.webContents.send("request P2P connection", clientSocketId);
     });
 
-    ipcMain.on("send ICE candidate", (event, clientId, candidate) => {
-        mainWindow.webContents.send("send ICE candidate", clientId, candidate);
+    ipcMain.on("send ICE candidate", (event, clientSocketId, candidate) => {
+        mainWindow.webContents.send("send ICE candidate", clientSocketId, candidate);
     });
 
-    ipcMain.on("receive ICE candidate", (event, clientId, candidate) => {
-        let unit = units.get(clientId);
+    ipcMain.on("receive ICE candidate", (event, clientSocketId, candidate) => {
+        let unit = socketIdUnitMap.get(clientSocketId);
         unit.webContents.send("receive ICE candidate", candidate);
     });
 
-    ipcMain.on("reset connection", (event, clientId) => {
-        mainWindow.webContents.send("reset connection", clientId);
+    ipcMain.on("reset connection", (event, clientSocketId) => {
+        mainWindow.webContents.send("reset connection", clientSocketId);
     });
 
     ipcMain.on("initialize scan", (event, selectedRootDirectory) => {
-        units.forEach(unit => {
+        socketIdUnitMap.forEach(unit => {
             unit.webContents.send("initialize scan", selectedRootDirectory);
         });
     });
 
-    ipcMain.on("delete client", (event, clientId, error) => {
-        let unit = units.get(clientId);
+    ipcMain.on("delete client", (event, clientSocketId, error) => {
+        let unit = socketIdUnitMap.get(clientSocketId);
         unit.webContents.send("delete client", error);
         unit.close();
         unit = null;
-        units.delete(clientId);
+        socketIdUnitMap.delete(clientSocketId);
     });
 
     ipcMain.on("delete all", () => {
-        units = null;
+        socketIdUnitMap = null;
     });
 }
 

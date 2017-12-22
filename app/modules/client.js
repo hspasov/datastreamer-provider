@@ -22,14 +22,14 @@ bluebird.promisifyAll(fs);
 const sizeOf = bluebird.promisify(getImageSize);
 
 class Client {
-    constructor(id, selectedRootDirectory, currentDirectory = ".", watcherOptions = {
+    constructor(unitData, selectedRootDirectory, currentDirectory = ".", watcherOptions = {
         ignored: /[\/\\]\./,
         persistent: true,
         usePolling: true,
         alwaysStat: true,
         depth: 0
     }) {
-        this.id = id;
+        this.id = unitData.clientSocketId;
         this.selectedRootDirectory = selectedRootDirectory;
         this.currentDirectory = currentDirectory;
         this.scannedFiles = new Map();

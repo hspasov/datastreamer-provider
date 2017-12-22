@@ -49,37 +49,37 @@ function Socket(connector, token, pageAccessor) {
         });
     });
 
-    this.socket.on("unsubscribedClient", clientId => {
+    this.socket.on("unsubscribedClient", clientSocketId => {
         console.log("unsubscribed client");
-        this.connector.deleteClient(clientId);
+        this.connector.deleteClient(clientSocketId);
         pageAccessor(function () {
             this.setState(prevState => ({
-                clients: remove(prevState.clients, clientId)
+                clients: remove(prevState.clients, clientSocketId)
             }));
         });
     });
 
-    this.socket.on("subscribedClient", clientId => {
-        this.connector.createUnit(clientId, this.connector.selectedRootDirectory);
+    this.socket.on("subscribedClient", (clientSocketId, username, accessRules) => {
+        this.connector.createUnit({ clientSocketId, username, accessRules }, this.connector.selectedRootDirectory);
         pageAccessor(function () {
             this.setState(prevState => ({
-                clients: add(prevState.clients, clientId)
+                clients: add(prevState.clients, clientSocketId)
             }));
         });
     });
 
-    this.socket.on("initConnection", (clientId, description) => {
+    this.socket.on("initConnection", (clientSocketId, description) => {
         console.log("initting connection");
-        this.connector.receiveDescription(clientId, description);
+        this.connector.receiveDescription(clientSocketId, description);
     });
 
-    this.socket.on("resetConnection", clientId => {
-        this.connector.deleteClient(clientId);
-        this.connector.createUnit(clientId, this.connector.selectedRootDirectory);
+    this.socket.on("resetConnection", clientSocketId => {
+        this.connector.deleteClient(clientSocketId);
+        this.connector.createUnit(clientSocketId, this.connector.selectedRootDirectory);
     });
 
-    this.socket.on("receiveICECandidate", (clientId, candidate) => {
-        this.connector.receiveICECandidate(clientId, candidate);
+    this.socket.on("receiveICECandidate", (clientSocketId, candidate) => {
+        this.connector.receiveICECandidate(clientSocketId, candidate);
     });
 }
 

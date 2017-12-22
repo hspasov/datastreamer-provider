@@ -12,35 +12,35 @@ class ConnectorMain {
         this.connectToClients = this.connectToClients.bind(this);
         this.deleteAll = this.deleteAll.bind(this);
 
-        ipcRenderer.on("send description", (event, clientId, description) => {
+        ipcRenderer.on("send description", (event, clientSocketId, description) => {
             console.log("inside send description with desc=", description);
-            this.socket.emit("connectToClient", clientId, description);
+            this.socket.emit("connectToClient", clientSocketId, description);
         });
 
-        ipcRenderer.on("send ICE candidate", (event, clientId, candidate) => {
-            console.log(`Sending ICE candidate ${candidate} to ${clientId}`);
-            this.socket.emit("sendICECandidate", candidate, clientId);
+        ipcRenderer.on("send ICE candidate", (event, clientSocketId, candidate) => {
+            console.log(`Sending ICE candidate ${candidate} to ${clientSocketId}`);
+            this.socket.emit("sendICECandidate", candidate, clientSocketId);
         });
 
-        ipcRenderer.on("request P2P connection", (event, clientId) => {
-            this.socket.emit("requestP2PConnection", clientId);
+        ipcRenderer.on("request P2P connection", (event, clientSocketId) => {
+            this.socket.emit("requestP2PConnection", clientSocketId);
         });
 
-        ipcRenderer.on("reset connection", (event, clientId) => {
-            this.socket.emit("resetClientConnection", clientId);
+        ipcRenderer.on("reset connection", (event, clientSocketId) => {
+            this.socket.emit("resetClientConnection", clientSocketId);
         });
     }
 
-    createUnit(clientId, selectedRootDirectory) {
-        ipcRenderer.send("create unit", clientId, selectedRootDirectory);
+    createUnit(unitData, selectedRootDirectory) {
+        ipcRenderer.send("create unit", unitData, selectedRootDirectory);
     }
 
-    receiveDescription(clientId, description) {
-        ipcRenderer.send("receive description", clientId, description);
+    receiveDescription(clientSocketId, description) {
+        ipcRenderer.send("receive description", clientSocketId, description);
     }
 
-    receiveICECandidate(clientId, candidate) {
-        ipcRenderer.send("receive ICE candidate", clientId, candidate);
+    receiveICECandidate(clientSocketId, candidate) {
+        ipcRenderer.send("receive ICE candidate", clientSocketId, candidate);
     }
 
     connectToClients() {
@@ -60,8 +60,8 @@ class ConnectorMain {
         ipcRenderer.send("delete all");
     }
 
-    deleteClient(clientId, error=null) {
-        ipcRenderer.send("delete client", clientId, error);
+    deleteClient(clientSocketId, error=null) {
+        ipcRenderer.send("delete client", clientSocketId, error);
     }
 }
 
