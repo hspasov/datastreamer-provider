@@ -63,6 +63,10 @@ class ConnectorMain {
     deleteClient(clientSocketId, error=null) {
         ipcRenderer.send("delete client", clientSocketId, error);
     }
+
+    resetUnit(clientSocketId) {
+        ipcRenderer.send("reset unit", clientSocketId, this.selectedRootDirectory);
+    }
 }
 
 export default ConnectorMain;

@@ -15,6 +15,8 @@ class Register extends React.Component {
             username: "",
             password: "",
             confirmPassword: "",
+            clientConnectPassword: "",
+            confirmClientConnectPassword: "",
             hasFormErrors: false,
             formErrors: []
         }
@@ -22,6 +24,8 @@ class Register extends React.Component {
         this.handleUsernameChange = this.handleUsernameChange.bind(this);
         this.handlePasswordChange = this.handlePasswordChange.bind(this);
         this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
+        this.handleClientConnectPasswordChange = this.handleClientConnectPasswordChange.bind(this);
+        this.handleConfirmClientConnectPasswordChange = this.handleConfirmClientConnectPasswordChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -46,8 +50,28 @@ class Register extends React.Component {
         });
     }
 
+    handleClientConnectPasswordChange(event) {
+        event.preventDefault();
+        this.setState({
+            clientConnectPassword: event.target.value
+        });
+    }
+
+    handleConfirmClientConnectPasswordChange(event) {
+        event.preventDefault();
+        this.setState({
+            confirmClientConnectPassword: event.target.value
+        });
+    }
+
     handleSubmit() {
-        if (!(this.state.username && this.state.password)) {
+        if (!(
+            this.state.username &&
+            this.state.password &&
+            this.state.confirmPassword &&
+            this.state.clientConnectPassword &&
+            this.state.confirmClientConnectPassword)) {
+
             this.setState({
                 hasFormErrors: true,
                 formErrors: ["empty"]
@@ -63,9 +87,20 @@ class Register extends React.Component {
             return;
         }
 
+        if (this.state.clientConnectPassword != this.state.confirmClientConnectPassword) {
+            this.setState({
+                hasFormErrors: true,
+                formErrors: ["match"]
+            });
+            return;
+        }
+
+// todo: check if clientConnectPassword and password are same and give error if they are
+
         let formData = {
             username: this.state.username,
-            password: this.state.password
+            password: this.state.password,
+            clientConnectPassword: this.state.clientConnectPassword
         };
         fetch("https://datastreamer.local:3000/provider/register", {
             method: "POST",
@@ -144,6 +179,24 @@ class Register extends React.Component {
                                     type="password"
                                     required
                                     onChange={this.handleConfirmPasswordChange}
+                                />
+                                <Form.Input
+                                    fluid
+                                    icon="lock"
+                                    iconPosition="left"
+                                    placeholder="Client connect password"
+                                    type="password"
+                                    required
+                                    onChange={this.handleClientConnectPasswordChange}
+                                />
+                                <Form.Input
+                                    fluid
+                                    icon="lock"
+                                    iconPosition="left"
+                                    placeholder="Confirm client connect password"
+                                    type="password"
+                                    required
+                                    onChange={this.handleConfirmClientConnectPasswordChange}
                                 />
                                 <Button color="black" fluid size="large" onClick={this.handleSubmit}>Register</Button>
                                 <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />

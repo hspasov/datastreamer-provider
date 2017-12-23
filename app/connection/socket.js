@@ -59,8 +59,8 @@ function Socket(connector, token, pageAccessor) {
         });
     });
 
-    this.socket.on("subscribedClient", (clientSocketId, username, accessRules) => {
-        this.connector.createUnit({ clientSocketId, username, accessRules }, this.connector.selectedRootDirectory);
+    this.socket.on("subscribedClient", (clientSocketId, token, username, accessRules) => {
+        this.connector.createUnit({ clientSocketId, token, username, accessRules }, this.connector.selectedRootDirectory);
         pageAccessor(function () {
             this.setState(prevState => ({
                 clients: add(prevState.clients, clientSocketId)
@@ -74,8 +74,7 @@ function Socket(connector, token, pageAccessor) {
     });
 
     this.socket.on("resetConnection", clientSocketId => {
-        this.connector.deleteClient(clientSocketId);
-        this.connector.createUnit(clientSocketId, this.connector.selectedRootDirectory);
+        this.connector.resetUnit(clientSocketId);
     });
 
     this.socket.on("receiveICECandidate", (clientSocketId, candidate) => {
