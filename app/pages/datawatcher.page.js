@@ -1,8 +1,9 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button, Grid, Header, Message, Tab } from "semantic-ui-react";
+import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
 import ConnectorMain from "../modules/connectorMain";
 import { Redirect } from "react-router";
+import { toggleReadable, toggleWritable } from "../modules/clients";
 
 const dialog = window.require("electron").dialog;
 
@@ -22,6 +23,7 @@ class DataWatcher extends React.Component {
         this.initializeScan = this.initializeScan.bind(this);
         this.statusHandler = this.statusHandler.bind(this);
         this.pageAccessor = this.pageAccessor.bind(this);
+        this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
         this.connector = new ConnectorMain(this.props.provider.token, this.pageAccessor);
     }
 
@@ -61,6 +63,23 @@ class DataWatcher extends React.Component {
             this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
             this.setState({ selectedRootDirectory: dirPath });
         }
+    }
+
+    handleToggleAccessRule(clientId, accessRule) {
+        switch (accessRule) {
+            case "readable":
+                this.setState(prevState => ({
+                    clients: toggleReadable(prevState.clients, clientId)
+                }));
+                break;
+            case "writable":
+                this.setState(prevState => ({
+                    clients: toggleWritable(prevState.clients, clientId)
+                }));
+                break;
+            default:
+                console.log("Error: Invalid accessRule: ", accessRule);
+        };
     }
 
     statusHandler(status) {
@@ -135,7 +154,14 @@ class DataWatcher extends React.Component {
 
         const clients = <div>
             {this.state.clients.map((client, i) => {
-                return <p key={i}>{client}</p>;
+                return <div key = { client.id }>
+                    <p>{client.username}</p>
+                    <p>{client.token}</p>
+                    <Label>Readable:</Label>
+                    <Checkbox name="readable" toggle checked={client.readable} onClick={() => this.handleToggleAccessRule(client.id, "readable")} />
+                    <Label>Writable:</Label>
+                    <Checkbox name="writable" toggle checked={client.writable} onClick={() => this.handleToggleAccessRule(client.id, "writable")}/>
+                </div>;
             })}
         </div>;
 

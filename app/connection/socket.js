@@ -62,8 +62,23 @@ function Socket(connector, token, pageAccessor) {
     this.socket.on("subscribedClient", (clientSocketId, token, username, accessRules) => {
         this.connector.createUnit({ clientSocketId, token, username, accessRules }, this.connector.selectedRootDirectory);
         pageAccessor(function () {
+            let readable, writable;
+            switch (accessRules) {
+                case "N":
+                    readable = writable = false;
+                    break;
+                case "R":
+                    readable = true;
+                    writable = false;
+                    break;
+                case "RW":
+                    readable = writable = true;
+                    break;
+                default:
+                    console.log("ERROR: invalid accessRules:", accessRules);
+            };
             this.setState(prevState => ({
-                clients: add(prevState.clients, clientSocketId)
+                clients: add(prevState.clients, { id: clientSocketId, token, username, readable, writable })
             }));
         });
     });
