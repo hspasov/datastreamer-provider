@@ -1,6 +1,6 @@
 import io from "socket.io-client";
 import Client from "../modules/client";
-import { add, remove } from "../modules/clients";
+import { addClient, removeClient } from "../actions/connections";
 
 function Socket(connector, token, pageAccessor) {
     this.connector = connector;
@@ -53,9 +53,7 @@ function Socket(connector, token, pageAccessor) {
         console.log("unsubscribed client");
         this.connector.deleteClient(clientSocketId);
         pageAccessor(function () {
-            this.setState(prevState => ({
-                clients: remove(prevState.clients, clientSocketId)
-            }));
+            this.props.dispatch(removeClient(clientSocketId));
         });
     });
 
@@ -77,9 +75,7 @@ function Socket(connector, token, pageAccessor) {
                 default:
                     console.log("ERROR: invalid accessRules:", accessRules);
             };
-            this.setState(prevState => ({
-                clients: add(prevState.clients, { id: clientSocketId, token, username, readable, writable })
-            }));
+            this.props.dispatch(addClient({ id: clientSocketId, token, username, readable, writable }));
         });
     });
 

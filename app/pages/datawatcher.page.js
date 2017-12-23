@@ -3,23 +3,25 @@ import { connect } from "react-redux";
 import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
 import ConnectorMain from "../modules/connectorMain";
 import { Redirect } from "react-router";
-import { toggleReadable, toggleWritable } from "../modules/clients";
-
+import { toggleReadable, toggleWritable } from "../actions/connections";
+import {
+    setMainDirectory
+} from "../actions/settings";
+import {
+    connectSuccess,
+    connectError,
+    connectTimeout,
+    disconnect,
+    reconnectFail,
+    error
+} from "../actions/status";
 const dialog = window.require("electron").dialog;
 
 class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            clients: [],
-            selectedRootDirectory: "N/A",
-            isErrorState: true,
-            status: "Online",
-            statusMessage: "Please select a root directory!"
-        };
-
-        this.handleSelectRootDirectory = this.handleSelectRootDirectory.bind(this);
+        this.handleSelectMainDirectory = this.handleSelectMainDirectory.bind(this);
         this.initializeScan = this.initializeScan.bind(this);
         this.statusHandler = this.statusHandler.bind(this);
         this.pageAccessor = this.pageAccessor.bind(this);
@@ -57,25 +59,32 @@ class DataWatcher extends React.Component {
         });
     }
 
-    handleSelectRootDirectory(event) {
+    handleSelectMainDirectory(event) {
         if (event.target.files[0]) {
             let dirPath = event.target.files[0].path;
             this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
-            this.setState({ selectedRootDirectory: dirPath });
+            this.props.dispatch(setMainDirectory(dirPath));
+        }
+    }
+
+    handleToggleDefaultAccessRule(accessRule) {
+        switch (accessRule) {
+            case "readable":
+                break;
+            case "writable":
+                break;
+            default:
+                console.log("Error: invalid access rule", accessRule);
         }
     }
 
     handleToggleAccessRule(clientId, accessRule) {
         switch (accessRule) {
             case "readable":
-                this.setState(prevState => ({
-                    clients: toggleReadable(prevState.clients, clientId)
-                }));
+                this.props.dispatch(toggleReadable(clientId));
                 break;
             case "writable":
-                this.setState(prevState => ({
-                    clients: toggleWritable(prevState.clients, clientId)
-                }));
+                this.props.dispatch(toggleWritable(clientId));
                 break;
             default:
                 console.log("Error: Invalid accessRule: ", accessRule);
@@ -85,46 +94,22 @@ class DataWatcher extends React.Component {
     statusHandler(status) {
         switch (status.event) {
             case "connect":
-                this.setState({
-                    isErrorState: false,
-                    status: "Online",
-                    statusMessage: ""
-                });
+                this.props.dispatch(connectSuccess());
                 break;
             case "connect_error":
-                this.setState({
-                    isErrorState: true,
-                    status: "Offline",
-                    statusMessage: "Can't connect to server."
-                });
+                this.props.dispatch(connectError());
                 break;
             case "connect_timeout":
-                this.setState({
-                    isErrorState: true,
-                    status: "Offline",
-                    statusMessage: "Connect timeout."
-                });
+                this.props.dispatch(connectTimeout());
                 break;
             case "error":
-                this.setState({
-                    isErrorState: true,
-                    status: "Offline",
-                    statusMessage: "Error."
-                });
+                this.props.dispatch(error());
                 break;
             case "disconnect":
-                this.setState({
-                    isErrorState: true,
-                    status: "Offline",
-                    statusMessage: "Disconnected."
-                });
+                this.props.dispatch(disconnect());
                 break;
             case "reconnect_failed":
-                this.setState({
-                    isErrorState: true,
-                    status: "Offline",
-                    statusMessage: "Reconnect failed."
-                });
+                this.props.dispatch(reconnectFail());
                 break;
         }
     }
@@ -141,19 +126,20 @@ class DataWatcher extends React.Component {
         const settings = <div>
             <Header>This provider:</Header>
             <p>{this.props.provider.username}</p>
-            <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectRootDirectory} />
+            <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectMainDirectory} />
             <Button onClick={this.initializeScan}>Scan Directory</Button>
             <Header>Main directory path:</Header>
-            <p>{this.state.selectedRootDirectory}</p>
+            <p>{this.props.settings.mainDirectory}</p>
+            <Header>Access rules:</Header>
             <Header>Status:</Header>
-            <Message color={(this.state.isErrorState)? "red" : "olive"} compact>
-                <Message.Header>{this.state.status}</Message.Header>
-                <p>{this.state.statusMessage}</p>
+            <Message color={(this.props.status.isError)? "red" : "olive"} compact>
+                <Message.Header>{(this.props.status.connection) ? "Online" : "Offline"}</Message.Header>
+                <p>{this.props.status.message}</p>
             </Message>
         </div>;
 
         const clients = <div>
-            {this.state.clients.map((client, i) => {
+            {this.props.connections.clients.map((client, i) => {
                 return <div key = { client.id }>
                     <p>{client.username}</p>
                     <p>{client.token}</p>
@@ -188,6 +174,9 @@ class DataWatcher extends React.Component {
 const DataWatcherPage = connect(store => {
     return {
         provider: store.provider,
+        settings: store.settings,
+        connections: store.connections,
+        status: store.status
     };
 })(DataWatcher);
 
