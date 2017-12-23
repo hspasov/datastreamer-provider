@@ -12,6 +12,13 @@ const removeClient = id => {
     };
 }
 
+const setAccess = (id, readable, writable) => {
+    return {
+        type: "SET_ACCESS",
+        payload: { id, readable, writable }
+    };
+}
+
 const toggleReadable = id => {
     return {
         type: "TOGGLE_READABLE",
@@ -28,6 +35,7 @@ const toggleWritable = id => {
 
 export {
     addClient,
+    setAccess,
     removeClient,
     toggleReadable,
     toggleWritable

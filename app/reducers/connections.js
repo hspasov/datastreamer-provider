@@ -8,7 +8,22 @@ const reducer = (state = { clients: [] }, action) => {
         case "REMOVE":
             return {
                 ...state,
-                clients: state.clients.filter(c => c.id !== id)
+                clients: state.clients.filter(c => c.id !== action.payload)
+            };
+        case "SET_ACCESS":
+            return {
+                ...state,
+                clients: state.clients.map(c => {
+                    if (c.id !== action.payload.id) {
+                        return c;
+                    } else {
+                        return {
+                            ...c,
+                            readable: action.payload.readable,
+                            writable: action.payload.writable
+                        };
+                    }
+                })
             };
         case "TOGGLE_READABLE":
             return {

@@ -3,9 +3,13 @@ import { connect } from "react-redux";
 import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
 import ConnectorMain from "../modules/connectorMain";
 import { Redirect } from "react-router";
-import { toggleReadable, toggleWritable } from "../actions/connections";
+import { setAccess } from "../actions/connections";
+import formurlencoded from "form-urlencoded";
 import {
-    setMainDirectory
+    setMainDirectory,
+    toggleDefaultReadable,
+    setDefaultAccess,
+    toggleDefaultWritable
 } from "../actions/settings";
 import {
     connectSuccess,
@@ -68,27 +72,57 @@ class DataWatcher extends React.Component {
     }
 
     handleToggleDefaultAccessRule(accessRule) {
-        switch (accessRule) {
-            case "readable":
-                break;
-            case "writable":
-                break;
-            default:
-                console.log("Error: invalid access rule", accessRule);
-        }
+        let readable = (accessRule === "readable") ? !this.props.settings.readable : this.props.settings.readable;
+        let writable = (accessRule === "writable") ? !this.props.settings.writable : this.props.settings.writable;
+        const formData = {
+            token: this.props.provider.token,
+            readable,
+            writable
+        };
+        fetch("https://datastreamer.local:3000/access/provider", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status === 200) {
+                return response.json();
+            } else {
+                // todo
+                throw response;
+            }
+        }).then(json => {
+            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     handleToggleAccessRule(clientId, accessRule) {
-        switch (accessRule) {
-            case "readable":
-                this.props.dispatch(toggleReadable(clientId));
-                break;
-            case "writable":
-                this.props.dispatch(toggleWritable(clientId));
-                break;
-            default:
-                console.log("Error: Invalid accessRule: ", accessRule);
+        const client = this.props.connections.clients.find(c => c.id === clientId);
+        let readable = (accessRule === "readable")? !client.readable : client.readable;
+        let writable = (accessRule === "writable")? !client.writable : client.writable;
+        const formData = {
+            providerToken: this.props.provider.token,
+            connectionToken: client.token,
+            readable,
+            writable
         };
+        fetch("https://datastreamer.local:3000/access/client", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status === 200) {
+                return response.json();
+            } else {
+                // todo
+                throw response;
+            }
+        }).then(json => {
+            this.props.dispatch(setAccess(clientId, json.readable, json.writable));
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     statusHandler(status) {
@@ -131,6 +165,10 @@ class DataWatcher extends React.Component {
             <Header>Main directory path:</Header>
             <p>{this.props.settings.mainDirectory}</p>
             <Header>Access rules:</Header>
+            <Label>Readable:</Label>
+            <Checkbox name="readable" toggle checked={this.props.settings.readable} onClick={() => this.handleToggleDefaultAccessRule("readable")} />
+            <Label>Writable:</Label>
+            <Checkbox name="writable" toggle checked={this.props.settings.writable} onClick={() => this.handleToggleDefaultAccessRule("writable")} />
             <Header>Status:</Header>
             <Message color={(this.props.status.isError)? "red" : "olive"} compact>
                 <Message.Header>{(this.props.status.connection) ? "Online" : "Offline"}</Message.Header>

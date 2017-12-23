@@ -5,6 +5,24 @@ const setMainDirectory = selectedDirectory => {
     };
 }
 
+const setDefaultAccess = (readable, writable) => {
+    return {
+        type: "SET_ACCESS",
+        payload: { readable, writable }
+    };
+}
+
+const toggleDefaultReadable = () => {
+    return { type: "TOGGLE_READABLE" };
+}
+
+const toggleDefaultWritable = () => {
+    return { type: "TOGGLE_WRITABLE" };
+}
+
 export {
-    setMainDirectory
+    setMainDirectory,
+    setDefaultAccess,
+    toggleDefaultReadable,
+    toggleDefaultWritable
 };
