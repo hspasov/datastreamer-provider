@@ -3,10 +3,10 @@ import { connect } from "react-redux";
 import { push } from "react-router-redux";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
-import loginProvider from "../actions/provider";
+import loginProvider from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
-import FormSubmitError from "../components/formSubmitError.component";
+import FormSubmitError from "../components/form-submit-error";
 
 class Login extends React.Component {
     constructor(props) {

@@ -3,7 +3,7 @@ const chokidar = window.require("chokidar");
 const Magic = window.require("promise-mmmagic");
 const magic = new Magic(Magic.MAGIC_MIME_TYPE);
 
-export default function scanDirectory() {
+function scanDirectory() {
     let isCurrentDirectory = true;
     const path = pathModule.join(this.selectedRootDirectory, this.currentDirectory);
     this.setWatcher(chokidar.watch(path, this.watcherOptions));
@@ -52,3 +52,5 @@ export default function scanDirectory() {
             this.sendMessage("doneSending");
         });
 }
+
+export default scanDirectory;

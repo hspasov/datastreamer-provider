@@ -1,6 +1,5 @@
 import io from "socket.io-client";
-import Client from "../modules/client";
-import { addClient, removeClient } from "../actions/connections";
+import { addClient, removeClient } from "../store/actions/connections";
 
 function Socket(connector, token, pageAccessor) {
     this.connector = connector;

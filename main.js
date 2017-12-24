@@ -1,6 +1,6 @@
 "use strict";
 
-const ipcHandler = require("./ipcHandler");
+const ipcHandler = require("./ipc-handler");
 const electron = require("electron");
 const { app, BrowserWindow } = electron;
 

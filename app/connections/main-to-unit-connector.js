@@ -1,9 +1,9 @@
-import Socket from "../connection/socket";
+import Socket from "./socket";
 
 const electron = window.require("electron");
 const ipcRenderer = electron.ipcRenderer;
 
-class ConnectorMain {
+class MainToUnitConnector {
     constructor(token, pageAccessor) {
         this.socket = new Socket(this, token, pageAccessor).socket;
 
@@ -69,4 +69,4 @@ class ConnectorMain {
     }
 }
 
-export default ConnectorMain;
+export default MainToUnitConnector;

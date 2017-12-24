@@ -1,16 +1,16 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
-import ConnectorMain from "../modules/connectorMain";
+import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
-import { setAccess } from "../actions/connections";
+import { setAccess } from "../../store/actions/connections";
 import formurlencoded from "form-urlencoded";
 import {
     setMainDirectory,
     toggleDefaultReadable,
     setDefaultAccess,
     toggleDefaultWritable
-} from "../actions/settings";
+} from "../../store/actions/settings";
 import {
     connectSuccess,
     connectError,
@@ -18,7 +18,7 @@ import {
     disconnect,
     reconnectFail,
     error
-} from "../actions/status";
+} from "../../store/actions/status";
 const { dialog } = window.require("electron");
 
 class DataWatcher extends React.Component {
@@ -30,7 +30,7 @@ class DataWatcher extends React.Component {
         this.statusHandler = this.statusHandler.bind(this);
         this.pageAccessor = this.pageAccessor.bind(this);
         this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
-        this.connector = new ConnectorMain(this.props.provider.token, this.pageAccessor);
+        this.connector = new MainToUnitConnector(this.props.provider.token, this.pageAccessor);
     }
 
     componentWillMount() {

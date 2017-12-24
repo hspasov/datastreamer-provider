@@ -18,7 +18,7 @@ function ipcHandler(mainWindow) {
         let unit = socketIdUnitMap.get(unitData.clientSocketId);
         unit.browserWindow.webContents.openDevTools();
         unit.browserWindow.loadURL(url.format({
-            pathname: path.join(__dirname, "app/modules/provider-unit.html"),
+            pathname: path.join(__dirname, "app/units/provider-unit.html"),
             protocol: "file:",
             slashes: true
         }));

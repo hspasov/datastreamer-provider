@@ -1,17 +1,17 @@
 import mime from "mime";
 import fileExtension from "file-extension";
 import bluebird from "bluebird";
-import ConnectorUnit from "./connectorUnit";
-import getFileType from "./getFileType";
-import getFilePermissions from "./getFilePermissions";
-import scanDirectory from "../modules/scanDirectory";
-import BufferStream from "../modules/bufferStream";
-import scaleImageMeasures from "../modules/scaleImageMeasures"
+import ConnectorUnit from "./connections/unit-to-main-connector";
+import getFileType from "./modules/get-file-type";
+import getFilePermissions from "./modules/get-file-permissions";
+import scanDirectory from "./modules/scan-directory";
+import BufferStream from "./modules/buffer-stream";
+import scaleImageMeasures from "./modules/scale-image-measures"
 import {
     prepareConnectionInitialization,
     exchangeDescriptions,
     receiveICECandidate
-} from "../connection/RTCInitialization";
+} from "./connections/rtc-initialization";
 
 const fs = window.require("fs");
 const pathModule = window.require("path").posix;

@@ -18,4 +18,4 @@ function getFileType(path, stats) {
     return result;
 };
 
-module.exports = getFileType;
+export default getFileType;

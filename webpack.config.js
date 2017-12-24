@@ -3,7 +3,7 @@ const path = require("path").posix;
 module.exports = {
     entry: {
         "bundle": "./app/app.js",
-        "unit": "./app/modules/unit.js"
+        "unit": "./app/units/init.js"
     },
     output: {
         path: path.resolve(__dirname, "./public/js"),

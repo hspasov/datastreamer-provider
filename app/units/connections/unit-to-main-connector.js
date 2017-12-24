@@ -1,6 +1,6 @@
 const { ipcRenderer } = window.require("electron");
 
-class ConnectorUnit {
+class UnitToMainConnector {
     constructor(client) {
         this.client = client;
         ipcRenderer.on("delete client", (event, error=null) => {
@@ -50,4 +50,4 @@ class ConnectorUnit {
     }
 }
 
-export default ConnectorUnit;
+export default UnitToMainConnector;

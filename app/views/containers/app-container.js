@@ -4,9 +4,9 @@ import { Route, Switch } from "react-router-dom";
 import { push } from "react-router-redux";
 import { connect } from "react-redux";
 
-import DataWatcherPage from "../pages/datawatcher.page";
-import LoginPage from "../pages/login.page";
-import RegisterPage from "../pages/register.page";
+import DataWatcherPage from "../pages/data-watcher-page";
+import LoginPage from "../pages/login-page";
+import RegisterPage from "../pages/register-page";
 
 class App extends React.Component {
     constructor(props) {
