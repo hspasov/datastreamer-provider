@@ -46,20 +46,9 @@ class Client {
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
         this.exchangeDescriptions = exchangeDescriptions.bind(this);
         this.receiveICECandidate = receiveICECandidate.bind(this);
-        this.initializeScan = this.initializeScan.bind(this);
-        this.sendThumbnail = this.sendThumbnail.bind(this);
-        this.sendFile = this.sendFile.bind(this);
-        this.sendMessage = this.sendMessage.bind(this);
         this.scanDirectory = scanDirectory.bind(this);
-        this.setWatcher = this.setWatcher.bind(this);
-        this.changeDirectory = this.changeDirectory.bind(this);
-        this.changeScannedFiles = this.changeScannedFiles.bind(this);
-        this.removeFromScannedFiles = this.removeFromScannedFiles.bind(this);
-        this.getFileMetadata = this.getFileMetadata.bind(this);
-        this.restart = this.restart.bind(this);
-        this.delete = this.delete.bind(this);
 
-        this.prepareConnectionInitialization();
+        this.prepareConnectionInitialization(unitData.accessRules);
     }
 
     initializeScan(selectedDirectory) {
@@ -67,6 +56,20 @@ class Client {
         this.selectedRootDirectory = selectedDirectory;
         if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
             this.scanDirectory();
+        }
+    }
+
+    errorHandler(error) {
+        console.log(error);
+    }
+
+    processMessageWritable(message) {
+        switch (message.action) {
+            case "firstWritable":
+                console.log("first writable");
+                break;
+            default:
+                this.processMessage(message);
         }
     }
 
@@ -117,7 +120,13 @@ class Client {
         try {
             const path = pathModule.join(this.selectedRootDirectory, filePath);
             this.readStream = fs.createReadStream(path);
+            const bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
+            this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
+            this.sendFileChannel.onbufferedamountlow = () => this.readStream.resume();
             this.readStream.on("data", chunk => {
+                if (this.sendFileChannel.bufferedAmount > bufferedAmountHighThreshold) {
+                    this.readStream.pause();
+                }
                 this.sendFileChannel.send(chunk);
             });
             this.readStream.on("end", () => {

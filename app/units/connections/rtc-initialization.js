@@ -1,4 +1,4 @@
-function prepareConnectionInitialization() {
+function prepareConnectionInitialization(accessRules) {
     try {
         this.peerConnection = new RTCPeerConnection(this.servers, this.peerConnectionConstraint);
         console.log("Created local peer connection object localConnection");
@@ -13,9 +13,21 @@ function prepareConnectionInitialization() {
         this.peerConnection.ondatachannel = event => {
             console.log("there is data channel");
             this.receiveMessageChannel = event.channel;
-            this.receiveMessageChannel.onmessage = event => {
-                this.processMessage(JSON.parse(event.data));
+            let messageProcessing;
+            if (accessRules.readable && accessRules.writable) {
+                messageProcessing = event => {
+                    this.processMessageWritable(JSON.parse(event.data));
+                }
+            } else if (accessRules.readable && !accessRules.writable) {
+                messageProcessing = event => {
+                    this.processMessage(JSON.parse(event.data));
+                }
+            } else {
+                messageProcessing = () => {
+                    this.errorHandler("Unauthorized access");
+                }
             }
+            this.receiveMessageChannel.onmessage = messageProcessing;
         }
 
         this.sendMessageChannel = this.peerConnection.createDataChannel("sendMessageChannel", this.dataConstraint);
