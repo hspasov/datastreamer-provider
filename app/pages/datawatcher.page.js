@@ -19,7 +19,7 @@ import {
     reconnectFail,
     error
 } from "../actions/status";
-const dialog = window.require("electron").dialog;
+const { dialog } = window.require("electron");
 
 class DataWatcher extends React.Component {
     constructor(props) {
@@ -31,6 +31,25 @@ class DataWatcher extends React.Component {
         this.pageAccessor = this.pageAccessor.bind(this);
         this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
         this.connector = new ConnectorMain(this.props.provider.token, this.pageAccessor);
+    }
+
+    componentWillMount() {
+        fetch("https://datastreamer.local:3000/access/provider", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded({ token: this.props.provider.token })
+        }).then(response => {
+            if (response.status === 200) {
+                return response.json();
+            } else {
+                // todo
+                throw response;
+            }
+        }).then(json => {
+            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     componentDidMount() {
@@ -79,7 +98,7 @@ class DataWatcher extends React.Component {
             readable,
             writable
         };
-        fetch("https://datastreamer.local:3000/access/provider", {
+        fetch("https://datastreamer.local:3000/access/default", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)

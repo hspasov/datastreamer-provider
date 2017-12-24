@@ -1,8 +1,6 @@
 const path = require("path").posix;
 const url = require("url");
-const electron = require("electron");
-const BrowserWindow = electron.BrowserWindow;
-const ipcMain = electron.ipcMain;
+const { BrowserWindow, ipcMain } = require("electron");
 
 function ipcHandler(mainWindow) {
     let socketIdUnitMap = new Map();

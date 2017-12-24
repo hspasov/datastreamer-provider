@@ -1,6 +1,5 @@
 import Client from "./client";
-const electron = window.require("electron");
-const ipcRenderer = electron.ipcRenderer;
+const { ipcRenderer } = window.require("electron");
 
 ipcRenderer.on("initialize", (event, unitData, selectedRootDirectory) => {
     const client = new Client(unitData, selectedRootDirectory);
