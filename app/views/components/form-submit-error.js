@@ -9,7 +9,9 @@ class FormSubmitError extends React.Component {
             "empty": "One or more fields were left empty",
             "validation": "Invalid username or password",
             "match": "Passwords don't match",
-            "connect": "Can't connect to server"
+            "exists": "Username already taken",
+            "connect": "Can't connect to server",
+            "error": "Unknown error"
         };
     }
 

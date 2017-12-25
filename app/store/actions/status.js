@@ -6,6 +6,14 @@ const connectError = () => {
     return { type: "CONNECT_ERROR" };
 }
 
+const invalidToken = () => {
+    return { type: "INVALID_TOKEN" };
+}
+
+const invalidClientToken = () => {
+    return { type: "INVALID_CLIENT_TOKEN" };
+}
+
 const connectTimeout = () => {
     return { type: "CONNECT_TIMEOUT" };
 }
@@ -25,6 +33,7 @@ const error = () => {
 export {
     connectSuccess,
     connectError,
+    invalidToken,
     connectTimeout,
     disconnect,
     reconnectFail,

@@ -14,6 +14,8 @@ import {
 import {
     connectSuccess,
     connectError,
+    invalidToken,
+    invalidClientToken,
     connectTimeout,
     disconnect,
     reconnectFail,
@@ -42,13 +44,18 @@ class DataWatcher extends React.Component {
             if (response.status === 200) {
                 return response.json();
             } else {
-                // todo
-                throw response;
+                throw response.status;
             }
         }).then(json => {
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
-        }).catch(error => {
-            console.log(error);
+        }).catch(errorCode => {
+            if (errorCode === 401) {
+                this.statusHandler("invalid_token");
+            } else if (errorCode === 500) {
+                this.statusHandler("error");
+            } else {
+                this.statusHandler("connect_error");
+            }
         });
     }
 
@@ -106,13 +113,18 @@ class DataWatcher extends React.Component {
             if (response.status === 200) {
                 return response.json();
             } else {
-                // todo
-                throw response;
+                throw response.status;
             }
         }).then(json => {
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
-        }).catch(error => {
-            console.log(error);
+        }).catch(errorCode => {
+            if (errorCode === 401) {
+                this.statusHandler("invalid_token");
+            } else if (errorCode === 500) {
+                this.statusHandler("error");
+            } else {
+                this.statusHandler("connect_error");
+            }
         });
     }
 
@@ -134,13 +146,26 @@ class DataWatcher extends React.Component {
             if (response.status === 200) {
                 return response.json();
             } else {
-                // todo
                 throw response;
             }
         }).then(json => {
             this.props.dispatch(setAccess(clientId, json.readable, json.writable));
-        }).catch(error => {
-            console.log(error);
+        }).catch(errorCode => {
+            if (errorCode.status === 401) {
+                errorCode.json().then(response => {
+                    if (response.reason === "providerToken") {
+                        this.statusHandler("invalid_token");
+                    } else if (response.reason === "connectionToken") {
+                        this.statusHandler("invalid_client_token");
+                    } else {
+                        this.statusHandler("error");
+                    }
+                });
+            } else if (errorCode.status === 500) {
+                this.statusHandler("error");
+            } else {
+                this.statusHandler("connect_error");
+            }
         });
     }
 
@@ -151,6 +176,12 @@ class DataWatcher extends React.Component {
                 break;
             case "connect_error":
                 this.props.dispatch(connectError());
+                break;
+            case "invalid_token":
+                this.props.dispatch(invalidToken());
+                break;
+            case "invalid_client_token":
+                this.props.dispatch(invalidClientToken());
                 break;
             case "connect_timeout":
                 this.props.dispatch(connectTimeout());
