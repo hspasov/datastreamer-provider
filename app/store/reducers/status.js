@@ -27,6 +27,12 @@ const reducer = (state = { isError: false, connection: true, message: "Please se
                 connetion: true,
                 message: "Client needs to reconnect."
             };
+        case "INVALID_REQUEST":
+            return {
+                ...state,
+                connection: true,
+                message: "Invalid request was sent to server."
+            };
         case "CONNECT_TIMEOUT":
             return {
                 ...state,

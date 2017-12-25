@@ -14,6 +14,10 @@ const invalidClientToken = () => {
     return { type: "INVALID_CLIENT_TOKEN" };
 }
 
+const invalidRequest = () => {
+    return { type: "INVALID_REQUEST" };
+}
+
 const connectTimeout = () => {
     return { type: "CONNECT_TIMEOUT" };
 }

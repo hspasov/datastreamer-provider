@@ -16,6 +16,7 @@ import {
     connectError,
     invalidToken,
     invalidClientToken,
+    invalidRequest,
     connectTimeout,
     disconnect,
     reconnectFail,
@@ -49,12 +50,18 @@ class DataWatcher extends React.Component {
         }).then(json => {
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
         }).catch(errorCode => {
-            if (errorCode === 401) {
-                this.statusHandler("invalid_token");
-            } else if (errorCode === 500) {
-                this.statusHandler("error");
-            } else {
-                this.statusHandler("connect_error");
+            switch (errorCode) {
+                case 400:
+                    this.statusHandler("invalid_request");
+                    break;
+                case 401:
+                    this.statusHandler("invalid_token");
+                    break;
+                case 500:
+                    this.statusHandler("error");
+                    break;
+                default:
+                    this.statusHandler("connect_error");
             }
         });
     }
@@ -118,12 +125,19 @@ class DataWatcher extends React.Component {
         }).then(json => {
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
         }).catch(errorCode => {
-            if (errorCode === 401) {
-                this.statusHandler("invalid_token");
-            } else if (errorCode === 500) {
-                this.statusHandler("error");
-            } else {
-                this.statusHandler("connect_error");
+            switch (errorCode) {
+                case 400:
+                    this.statusHandler("invalid_request");
+                    break;
+                case 401:
+                    this.statusHandler("invalid_token");
+                    break;
+                case 500:
+                    this.statusHandler("error");
+                    break;
+                default:
+                    this.statusHandler("connect_error");
+                    break;
             }
         });
     }
@@ -151,20 +165,26 @@ class DataWatcher extends React.Component {
         }).then(json => {
             this.props.dispatch(setAccess(clientId, json.readable, json.writable));
         }).catch(errorCode => {
-            if (errorCode.status === 401) {
-                errorCode.json().then(response => {
-                    if (response.reason === "providerToken") {
-                        this.statusHandler("invalid_token");
-                    } else if (response.reason === "connectionToken") {
-                        this.statusHandler("invalid_client_token");
-                    } else {
-                        this.statusHandler("error");
-                    }
-                });
-            } else if (errorCode.status === 500) {
-                this.statusHandler("error");
-            } else {
-                this.statusHandler("connect_error");
+            switch (errorCode.status) {
+                case 400:
+                    this.statusHandler("invalid_request");
+                    break;
+                case 401:
+                    errorCode.json().then(response => {
+                        if (response.reason === "providerToken") {
+                            this.statusHandler("invalid_token");
+                        } else if (response.reason === "connectionToken") {
+                            this.statusHandler("invalid_client_token");
+                        } else {
+                            this.statusHandler("error");
+                        }
+                    });
+                    break;
+                case 500:
+                    this.statusHandler("error");
+                    break;
+                default:
+                    this.statusHandler("connect_error");
             }
         });
     }
@@ -182,6 +202,9 @@ class DataWatcher extends React.Component {
                 break;
             case "invalid_client_token":
                 this.props.dispatch(invalidClientToken());
+                break;
+            case "invalid_request":
+                this.props.dispatch(invalidRequest());
                 break;
             case "connect_timeout":
                 this.props.dispatch(connectTimeout());

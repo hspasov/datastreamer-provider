@@ -116,22 +116,24 @@ class Register extends React.Component {
             this.props.dispatch(loginProvider(json));
             this.props.history.push("/datawatcher");
         }).catch(errorCode => {
-            if (response.status === 412) {
-                this.setState({
-                    hasFormErrors: true,
-                    formErrors: ["exists"]
-                });
-            } else if (response.status === 500) {
-                this.setState({
-                    hasFormErrors: true,
-                    formErrors: ["error"]
-                });
-            } else {
-                this.setState({
-                    hasFormErrors: true,
-                    formErrors: ["connect"]
-                });
+            let formErrors;
+            switch (errorCode) {
+                case 400:
+                    formErrors = ["format"];
+                    break;
+                case 412:
+                    formErrors = ["exists"];
+                    break;
+                case 500:
+                    formErrors = ["error"];
+                    break;
+                default:
+                    formErrors = ["connect"];
             }
+            this.setState({
+                hasFormErrors: true,
+                formErrors
+            });
         });
     }
 
