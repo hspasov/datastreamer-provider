@@ -53,6 +53,20 @@ const reducer = (state = { clients: [] }, action) => {
                     }
                 })
             };
+        case "CHANGE_DIRECTORY":
+            return {
+                ...state,
+                clients: state.clients.map(c => {
+                    if (c.id !== action.payload.id) {
+                        return c;
+                    } else {
+                        return {
+                            ...c,
+                            directory: action.payload.directory
+                        };
+                    }
+                })
+            };
     }
     return state;
 }

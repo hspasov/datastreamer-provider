@@ -28,6 +28,10 @@ function ipcHandler(mainWindow) {
         });
     });
 
+    ipcMain.on("change directory", (event, clientSocketId, directory) => {
+        mainWindow.webContents.send("change directory", clientSocketId, directory);
+    });
+
     ipcMain.on("receive description", (event, clientSocketId, description) => {
         let unit = socketIdUnitMap.get(clientSocketId);
         unit.browserWindow.webContents.send("receive description", description);

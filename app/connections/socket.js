@@ -72,7 +72,8 @@ function Socket(connector, token, pageAccessor) {
                 token,
                 username,
                 readable: accessRules.readable,
-                writable: accessRules.writable
+                writable: accessRules.writable,
+                directory: this.connector.selectedRootDirectory
             }));
         });
     });

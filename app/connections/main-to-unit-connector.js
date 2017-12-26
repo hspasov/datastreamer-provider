@@ -1,4 +1,5 @@
 import Socket from "./socket";
+import { changeClientDirectory } from "../store/actions/connections";
 
 const electron = window.require("electron");
 const ipcRenderer = electron.ipcRenderer;
@@ -28,6 +29,12 @@ class MainToUnitConnector {
 
         ipcRenderer.on("reset connection", (event, clientSocketId) => {
             this.socket.emit("resetClientConnection", clientSocketId);
+        });
+
+        ipcRenderer.on("change directory", (event, clientSocketId, directory) => {
+            pageAccessor(function () {
+                this.props.dispatch(changeClientDirectory(clientSocketId, directory));
+            });
         });
     }
 

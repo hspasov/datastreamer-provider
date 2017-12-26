@@ -78,6 +78,9 @@ class DataWatcher extends React.Component {
     handleToggleDefaultAccessRule(accessRule) {
         let readable = (accessRule === "readable") ? !this.props.settings.readable : this.props.settings.readable;
         let writable = (accessRule === "writable") ? !this.props.settings.writable : this.props.settings.writable;
+        if (!readable) {
+            writable = false;
+        }
         const formData = {
             token: this.props.provider.token,
             readable,
@@ -116,7 +119,10 @@ class DataWatcher extends React.Component {
     handleToggleAccessRule(clientId, accessRule) {
         const client = this.props.connections.clients.find(c => c.id === clientId);
         let readable = (accessRule === "readable")? !client.readable : client.readable;
-        let writable = (accessRule === "writable")? !client.writable : client.writable;
+        let writable = (accessRule === "writable") ? !client.writable : client.writable;
+        if (!readable) {
+            writable = false;
+        }
         const formData = {
             providerToken: this.props.provider.token,
             connectionToken: client.token,
@@ -209,10 +215,14 @@ class DataWatcher extends React.Component {
             <Header>Main directory path:</Header>
             <p>{this.props.settings.mainDirectory}</p>
             <Header>Access rules:</Header>
-            <Label>Readable:</Label>
-            <Checkbox name="readable" toggle checked={this.props.settings.readable} onClick={() => this.handleToggleDefaultAccessRule("readable")} />
-            <Label>Writable:</Label>
-            <Checkbox name="writable" toggle checked={this.props.settings.writable} onClick={() => this.handleToggleDefaultAccessRule("writable")} />
+            <div>
+                <Label>Readable:</Label>
+                <Checkbox name="readable" toggle checked={this.props.settings.readable} onClick={() => this.handleToggleDefaultAccessRule("readable")} />
+            </div>
+            {this.props.settings.readable && <div>
+                <Label>Writable:</Label>
+                <Checkbox name="writable" toggle checked={this.props.settings.writable} onClick={() => this.handleToggleDefaultAccessRule("writable")} />
+            </div>}
             <Header>Status:</Header>
             <Message color={(this.props.status.isError)? "red" : "olive"} compact>
                 <Message.Header>{(this.props.status.connection) ? "Online" : "Offline"}</Message.Header>
@@ -226,10 +236,18 @@ class DataWatcher extends React.Component {
                 return <div key = { client.id }>
                     <p>{client.username}</p>
                     <p>{client.token}</p>
-                    <Label>Readable:</Label>
-                    <Checkbox name="readable" toggle checked={client.readable} onClick={() => this.handleToggleAccessRule(client.id, "readable")} />
-                    <Label>Writable:</Label>
-                    <Checkbox name="writable" toggle checked={client.writable} onClick={() => this.handleToggleAccessRule(client.id, "writable")}/>
+                    <div>
+                        <Label>Readable:</Label>
+                        <Checkbox name="readable" toggle checked={client.readable} onClick={() => this.handleToggleAccessRule(client.id, "readable")} />
+                    </div>
+                    {client.readable && <div>
+                        <Label>Writable:</Label>
+                        <Checkbox name="writable" toggle checked={client.writable} onClick={() => this.handleToggleAccessRule(client.id, "writable")} />
+                    </div>}
+                    <div>
+                        <Header>Current directory:</Header>
+                        <p>{client.directory}</p>
+                    </div>
                 </div>;
             })}
         </div>;

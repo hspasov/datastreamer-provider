@@ -33,10 +33,18 @@ const toggleWritable = id => {
     };
 }
 
+const changeClientDirectory = (id, directory) => {
+    return {
+        type: "CHANGE_DIRECTORY",
+        payload: { id, directory }
+    };
+}
+
 export {
     addClient,
     setAccess,
     removeClient,
     toggleReadable,
-    toggleWritable
+    toggleWritable,
+    changeClientDirectory
 };

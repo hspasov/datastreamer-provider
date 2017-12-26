@@ -48,6 +48,10 @@ class UnitToMainConnector {
     deleteClient(error=null) {
         ipcRenderer.send("delete client", this.client.id, error);
     }
+
+    changeDirectory(directory) {
+        ipcRenderer.send("change directory", this.client.id, directory);
+    }
 }
 
 export default UnitToMainConnector;

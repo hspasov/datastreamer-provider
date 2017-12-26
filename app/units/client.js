@@ -173,6 +173,7 @@ class Client {
         }
         this.watcher = null;
         this.currentDirectory = selectedDirectory;
+        this.connector.changeDirectory(pathModule.join(this.selectedRootDirectory, this.currentDirectory));
         this.scannedFiles = new Map();
     }
 
