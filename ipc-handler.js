@@ -95,7 +95,7 @@ function ipcHandler(mainWindow) {
     });
 
     ipcMain.on("delete all", () => {
-        socketIdUnitMap = null;
+        socketIdUnitMap = new Map();
     });
 }
 

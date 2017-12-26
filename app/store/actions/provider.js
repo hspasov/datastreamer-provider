@@ -5,4 +5,11 @@ const loginProvider = providerData => {
     };
 }
 
-export default loginProvider;
+const logoutProvider = () => {
+    return { type: "LOGOUT_PROVIDER" };
+}
+
+export {
+    loginProvider,
+    logoutProvider
+};

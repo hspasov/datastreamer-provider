@@ -4,7 +4,7 @@ import { push } from "react-router-redux";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
-import loginProvider from "../../store/actions/provider";
+import { loginProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
 import FormSubmitError from "../components/form-submit-error";
@@ -62,7 +62,7 @@ class Login extends React.Component {
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
         }).then(response => {
-            if (response.status == 200) {
+            if (response.status === 200) {
                 return response.json();
             } else {
                 throw response.status;
@@ -72,6 +72,7 @@ class Login extends React.Component {
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
             this.props.dispatch(push("/datawatcher"));
         }).catch(errorCode => {
+            console.log(errorCode);
             let formErrors;
             switch (errorCode) {
                 case 404:

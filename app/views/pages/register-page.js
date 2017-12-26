@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
-import loginProvider from "../../store/actions/provider";
+import { loginProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import FormSubmitError from "../components/form-submit-error";
 

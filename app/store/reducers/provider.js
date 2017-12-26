@@ -6,6 +6,12 @@ const reducer = (state={token: "", username: ""}, action) => {
                 token: action.payload.token,
                 username: action.payload.username
             };
+        case "LOGOUT_PROVIDER":
+            return {
+                ...state,
+                token: "",
+                username: ""
+            };
     }
     return state;
 }

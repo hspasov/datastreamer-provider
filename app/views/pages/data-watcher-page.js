@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
 import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
+import { Link } from "react-router-dom";
 import { setAccess } from "../../store/actions/connections";
 import formurlencoded from "form-urlencoded";
 import {
@@ -217,6 +218,7 @@ class DataWatcher extends React.Component {
                 <Message.Header>{(this.props.status.connection) ? "Online" : "Offline"}</Message.Header>
                 <p>{this.props.status.message}</p>
             </Message>
+            <Link to="/account-settings">Account settings</Link>
         </div>;
 
         const clients = <div>
