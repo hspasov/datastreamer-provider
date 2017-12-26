@@ -36,36 +36,6 @@ class DataWatcher extends React.Component {
         this.connector = new MainToUnitConnector(this.props.provider.token, this.pageAccessor);
     }
 
-    componentWillMount() {
-        fetch("https://datastreamer.local:3000/access/provider", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded", },
-            body: formurlencoded({ token: this.props.provider.token })
-        }).then(response => {
-            if (response.status === 200) {
-                return response.json();
-            } else {
-                throw response.status;
-            }
-        }).then(json => {
-            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
-        }).catch(errorCode => {
-            switch (errorCode) {
-                case 400:
-                    this.statusHandler("invalid_request");
-                    break;
-                case 401:
-                    this.statusHandler("invalid_token");
-                    break;
-                case 500:
-                    this.statusHandler("error");
-                    break;
-                default:
-                    this.statusHandler("connect_error");
-            }
-        });
-    }
-
     componentDidMount() {
         if (this.props.provider.token) {
             window.addEventListener("beforeunload", this.connector.deleteAll);

@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { push } from "react-router-redux";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+import { setDefaultAccess } from "../../store/actions/settings";
 import loginProvider from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
@@ -68,6 +69,7 @@ class Login extends React.Component {
             }
         }).then(json => {
             this.props.dispatch(loginProvider(json));
+            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
             this.props.dispatch(push("/datawatcher"));
         }).catch(errorCode => {
             let formErrors;
@@ -149,7 +151,8 @@ class Login extends React.Component {
 
 const LoginPage = connect(store => {
     return {
-        provider: store.provider
+        provider: store.provider,
+        settings: store.settings
     };
 })(Login)
 

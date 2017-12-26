@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
 import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+import { setDefaultAccess } from "../../store/actions/settings";
 import loginProvider from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import FormSubmitError from "../components/form-submit-error";
@@ -114,6 +115,7 @@ class Register extends React.Component {
             }
         }).then(json => {
             this.props.dispatch(loginProvider(json));
+            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
             this.props.history.push("/datawatcher");
         }).catch(errorCode => {
             let formErrors;
@@ -225,7 +227,8 @@ class Register extends React.Component {
 
 const RegisterPage = connect(store => {
     return {
-        provider: store.provider
+        provider: store.provider,
+        settings: store.settigns
     };
 })(Register);
 

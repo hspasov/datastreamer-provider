@@ -48,6 +48,12 @@ function Socket(connector, token, pageAccessor) {
         });
     });
 
+    this.socket.on("connectFail", () => {
+        pageAccessor(function () {
+            this.statusHandler({ event: "invalid_token" });
+        });
+    });
+
     this.socket.on("unsubscribedClient", clientSocketId => {
         console.log("unsubscribed client");
         this.connector.deleteClient(clientSocketId);
@@ -57,26 +63,17 @@ function Socket(connector, token, pageAccessor) {
     });
 
     this.socket.on("subscribedClient", (clientSocketId, token, username, accessRules) => {
-        let readable, writable;
-        switch (accessRules) {
-            case "N":
-                readable = writable = false;
-                break;
-            case "R":
-                readable = true;
-                writable = false;
-                break;
-            case "RW":
-                readable = writable = true;
-                break;
-            default:
-                console.log("ERROR: invalid accessRules:", accessRules);
-        };
         this.connector.createUnit({
-            clientSocketId, token, username, accessRules: { readable, writable }
+            clientSocketId, token, username, accessRules
         }, this.connector.selectedRootDirectory);
         pageAccessor(function () {
-            this.props.dispatch(addClient({ id: clientSocketId, token, username, readable, writable }));
+            this.props.dispatch(addClient({
+                id: clientSocketId,
+                token,
+                username,
+                readable: accessRules.readable,
+                writable: accessRules.writable
+            }));
         });
     });
 
