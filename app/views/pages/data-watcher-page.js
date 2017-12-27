@@ -13,6 +13,10 @@ import {
     toggleDefaultWritable
 } from "../../store/actions/settings";
 import {
+    addBanned,
+    removeBanned
+} from "../../store/actions/banned";
+import {
     connectSuccess,
     connectError,
     invalidToken,
@@ -34,6 +38,7 @@ class DataWatcher extends React.Component {
         this.statusHandler = this.statusHandler.bind(this);
         this.pageAccessor = this.pageAccessor.bind(this);
         this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
+        this.handleRemoveBan = this.handleRemoveBan.bind(this);
         this.connector = new MainToUnitConnector(this.props.provider.token, this.pageAccessor);
     }
 
@@ -73,6 +78,10 @@ class DataWatcher extends React.Component {
             this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
             this.props.dispatch(setMainDirectory(dirPath));
         }
+    }
+
+    handleRemoveBan(client) {
+        this.props.dispatch(removeBanned(client.username));
     }
 
     handleToggleDefaultAccessRule(accessRule) {
@@ -231,6 +240,16 @@ class DataWatcher extends React.Component {
             <Link to="/account-settings">Account settings</Link>
         </div>;
 
+        const banned = <div>
+            {this.props.banned.clients.map((client, i) => {
+                return <div key={client.username}>
+                    <p>{client.username}</p>
+                    <Label>Banned:</Label>
+                    <Checkbox toggle checked={client.readable} onClick={() => this.handleRemoveBan(client)} />
+                </div>;
+            })}
+        </div>;
+
         const clients = <div>
             {this.props.connections.clients.map((client, i) => {
                 return <div key = { client.id }>
@@ -250,6 +269,7 @@ class DataWatcher extends React.Component {
                     </div>
                 </div>;
             })}
+            {banned}
         </div>;
 
         const panes = [
@@ -277,7 +297,8 @@ const DataWatcherPage = connect(store => {
         provider: store.provider,
         settings: store.settings,
         connections: store.connections,
-        status: store.status
+        status: store.status,
+        banned: store.banned
     };
 })(DataWatcher);
 

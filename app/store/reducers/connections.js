@@ -69,6 +69,6 @@ const reducer = (state = { clients: [] }, action) => {
             };
     }
     return state;
-}
+};
 
 export default reducer;

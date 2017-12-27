@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
+import { addAllBanned } from "../../store/actions/banned";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
 import FormSubmitError from "../components/form-submit-error";
@@ -68,8 +69,10 @@ class Login extends React.Component {
                 throw response.status;
             }
         }).then(json => {
+            console.log(json);
             this.props.dispatch(loginProvider(json));
             this.props.dispatch(setDefaultAccess(json.readable, json.writable));
+            this.props.dispatch(addAllBanned(json.banned));
             this.props.dispatch(push("/datawatcher"));
         }).catch(errorCode => {
             console.log(errorCode);
@@ -153,7 +156,8 @@ class Login extends React.Component {
 const LoginPage = connect(store => {
     return {
         provider: store.provider,
-        settings: store.settings
+        settings: store.settings,
+        banned: store.banned
     };
 })(Login)
 
