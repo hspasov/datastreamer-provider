@@ -85,6 +85,12 @@ class Client {
             case "getThumbnail":
                 this.sendThumbnail(message.filePath);
                 break;
+            case "getImage":
+                this.sendFile(message.filePath);
+                break;
+            case "getText":
+                this.sendFile(message.filePath);
+                break;
             case "readyForThumbnail":
                 this.readStream.on("data", chunk => {
                     this.sendFileChannel.send(chunk);
