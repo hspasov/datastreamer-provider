@@ -15,20 +15,20 @@ class MainToUnitConnector {
 
         ipcRenderer.on("send description", (event, clientSocketId, description) => {
             console.log("inside send description with desc=", description);
-            this.socket.emit("connectToClient", clientSocketId, description);
+            this.socket.emit("description", description, clientSocketId);
         });
 
         ipcRenderer.on("send ICE candidate", (event, clientSocketId, candidate) => {
             console.log(`Sending ICE candidate ${candidate} to ${clientSocketId}`);
-            this.socket.emit("sendICECandidate", candidate, clientSocketId);
+            this.socket.emit("ice_candidate", candidate, clientSocketId);
         });
 
         ipcRenderer.on("request P2P connection", (event, clientSocketId) => {
-            this.socket.emit("requestP2PConnection", clientSocketId);
+            this.socket.emit("p2p_request", clientSocketId);
         });
 
         ipcRenderer.on("reset connection", (event, clientSocketId) => {
-            this.socket.emit("resetClientConnection", clientSocketId);
+            this.socket.emit("connect_reset", clientSocketId);
         });
 
         ipcRenderer.on("change directory", (event, clientSocketId, directory) => {
@@ -51,7 +51,7 @@ class MainToUnitConnector {
     }
 
     connectToClients() {
-        this.socket.emit("connectToClients");
+        this.socket.emit("client_tokens_request");
     }
 
     initializeScan() {
@@ -68,7 +68,7 @@ class MainToUnitConnector {
     }
 
     deleteClient(clientSocketId, error = null) {
-        this.socket.emit("close-client-connection", clientSocketId);
+        this.socket.emit("close_client_connection", clientSocketId);
         ipcRenderer.send("delete client", clientSocketId, error);
     }
 

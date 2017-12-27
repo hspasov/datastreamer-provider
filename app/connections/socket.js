@@ -48,21 +48,20 @@ function Socket(connector, token, pageAccessor) {
         });
     });
 
-    this.socket.on("connectFail", () => {
+    this.socket.on("connect_reject", () => {
         pageAccessor(function () {
             this.statusHandler({ event: "invalid_token" });
         });
     });
 
-    this.socket.on("unsubscribedClient", clientSocketId => {
-        console.log("unsubscribed client");
+    this.socket.on("client_disconnect", clientSocketId => {
         this.connector.deleteClient(clientSocketId);
         pageAccessor(function () {
             this.props.dispatch(removeClient(clientSocketId));
         });
     });
 
-    this.socket.on("subscribedClient", (clientSocketId, token, username, accessRules) => {
+    this.socket.on("client_connect", (clientSocketId, token, username, accessRules) => {
         this.connector.createUnit({
             clientSocketId, token, username, accessRules
         }, this.connector.selectedRootDirectory);
@@ -78,16 +77,15 @@ function Socket(connector, token, pageAccessor) {
         });
     });
 
-    this.socket.on("initConnection", (clientSocketId, description) => {
-        console.log("initting connection");
+    this.socket.on("description", (clientSocketId, description) => {
         this.connector.receiveDescription(clientSocketId, description);
     });
 
-    this.socket.on("resetConnection", clientSocketId => {
+    this.socket.on("connect_reset", clientSocketId => {
         this.connector.resetUnit(clientSocketId);
     });
 
-    this.socket.on("receiveICECandidate", (clientSocketId, candidate) => {
+    this.socket.on("ice_candidate", (clientSocketId, candidate) => {
         this.connector.receiveICECandidate(clientSocketId, candidate);
     });
 }
