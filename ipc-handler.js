@@ -66,10 +66,11 @@ function ipcHandler(mainWindow) {
 
     ipcMain.on("delete client", (event, clientSocketId, error) => {
         let unit = socketIdUnitMap.get(clientSocketId);
-        unit.browserWindow.webContents.send("delete client", error);
-        unit.browserWindow.close();
-        unit.browserWindow = null;
-        socketIdUnitMap.delete(clientSocketId);
+        if (unit) {
+            unit.browserWindow.close();
+            unit.browserWindow = null;
+            socketIdUnitMap.delete(clientSocketId);
+        }
     });
 
     ipcMain.on("reset unit", (event, clientSocketId) => {

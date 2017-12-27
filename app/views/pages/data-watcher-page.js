@@ -4,7 +4,7 @@ import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui
 import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
-import { setAccess } from "../../store/actions/connections";
+import { setAccess, removeClient } from "../../store/actions/connections";
 import formurlencoded from "form-urlencoded";
 import {
     setMainDirectory,
@@ -39,6 +39,7 @@ class DataWatcher extends React.Component {
         this.pageAccessor = this.pageAccessor.bind(this);
         this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
         this.handleRemoveBan = this.handleRemoveBan.bind(this);
+        this.closeClientConnection = this.closeClientConnection.bind(this);
         this.connector = new MainToUnitConnector(this.props.provider.token, this.pageAccessor);
     }
 
@@ -69,6 +70,30 @@ class DataWatcher extends React.Component {
     selectDirectory() {
         dialog.showOpenDialog(mainWindow, {
             properties: ["openDirectory"]
+        });
+    }
+
+    closeClientConnection(client) {
+        const formData = {
+            connectionToken: client.token
+        };
+        fetch("https://datastreamer.local:3000/disconnect", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status === 200) {
+                this.connector.deleteClient(client.id);
+                this.props.dispatch(removeClient(client.id));
+            } else {
+                throw response.status;
+            }
+        }).catch(errorCode => {
+            if (errorCode === 500) {
+                this.statusHandler("error");
+            } else {
+                this.statusHandler("connect_error");
+            }
         });
     }
 
@@ -256,11 +281,14 @@ class DataWatcher extends React.Component {
                     <p>{client.username}</p>
                     <p>{client.token}</p>
                     <div>
-                        <Label>Readable:</Label>
+                        <Button onClick={() => this.closeClientConnection(client)}>Close connection</Button>
+                    </div>
+                    <div>
+                        <Header>Readable:</Header>
                         <Checkbox name="readable" toggle checked={client.readable} onClick={() => this.handleToggleAccessRule(client.id, "readable")} />
                     </div>
                     {client.readable && <div>
-                        <Label>Writable:</Label>
+                        <Header>Writable:</Header>
                         <Checkbox name="writable" toggle checked={client.writable} onClick={() => this.handleToggleAccessRule(client.id, "writable")} />
                     </div>}
                     <div>

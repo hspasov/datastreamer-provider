@@ -67,7 +67,8 @@ class MainToUnitConnector {
         ipcRenderer.send("delete all");
     }
 
-    deleteClient(clientSocketId, error=null) {
+    deleteClient(clientSocketId, error = null) {
+        this.socket.emit("close-client-connection", clientSocketId);
         ipcRenderer.send("delete client", clientSocketId, error);
     }
 
