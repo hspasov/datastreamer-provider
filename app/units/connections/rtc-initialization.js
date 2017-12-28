@@ -11,27 +11,37 @@ function prepareConnectionInitialization(accessRules) {
         };
 
         this.peerConnection.ondatachannel = event => {
-            console.log("there is data channel");
-            this.receiveMessageChannel = event.channel;
-            let messageProcessing;
-            if (accessRules.readable && accessRules.writable) {
-                messageProcessing = event => {
-                    this.processMessageWritable(JSON.parse(event.data));
-                }
-            } else if (accessRules.readable && !accessRules.writable) {
-                messageProcessing = event => {
-                    this.processMessage(JSON.parse(event.data));
-                }
-            } else {
-                messageProcessing = () => {
-                    this.errorHandler("Unauthorized access");
-                }
+            switch (event.channel.label) {
+                case "clientMessage":
+                    if (accessRules.readable) {
+                        this.receiveMessageChannel = event.channel;
+                        this.receiveMessageChannel.onmessage = event => {
+                            this.processMessage(JSON.parse(event.data));
+                        };
+                    }
+                    break;
+                case "clientMessageWritable":
+                    if (accessRules.readable && accessRules.writable) {
+                        this.receiveMessageWritableChannel = event.channel;
+                        this.receiveMessageWritableChannel.onmessage = event => {
+                            this.processMessageWritable(JSON.parse(event.data));
+                        };
+                    }
+                    break;
+                case "clientFile":
+                    if (accessRules.readable && accessRules.writable) {
+                        this.receiveFileChannel = event.channel;
+                        this.receiveFileChannel.binaryType = "arraybuffer";
+                        this.receiveFileChannel.onmessage = event => {
+                            // this.processMessageWritable(JSON.parse(event.data));
+                        };
+                    }
+                    break;
             }
-            this.receiveMessageChannel.onmessage = messageProcessing;
         }
 
-        this.sendMessageChannel = this.peerConnection.createDataChannel("sendMessageChannel", this.dataConstraint);
-        this.sendFileChannel = this.peerConnection.createDataChannel("sendFileChannel", this.dataConstraint);
+        this.sendMessageChannel = this.peerConnection.createDataChannel("providerMessage", this.dataConstraint);
+        this.sendFileChannel = this.peerConnection.createDataChannel("providerFile", this.dataConstraint);
         this.sendFileChannel.binaryType = "arraybuffer";
 
         this.sendMessageChannel.onopen = () => {

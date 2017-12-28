@@ -13,12 +13,11 @@ import {
     receiveICECandidate
 } from "./connections/rtc-initialization";
 
-const fs = window.require("fs");
+const fs = window.require("fs-extra");
 const pathModule = window.require("path").posix;
 const getImageSize = window.require("image-size");
 const resizeImg = window.require("resize-img");
 
-bluebird.promisifyAll(fs);
 const sizeOf = bluebird.promisify(getImageSize);
 
 class Client {
@@ -40,6 +39,11 @@ class Client {
         this.servers = null;
         this.peerConnectionConstraint = null;
         this.dataConstraint = null;
+        this.sendMessageChannel = null;
+        this.sendFileChannel = null;
+        this.receiveMessageChannel = null;
+        this.receiveMessageWritableChannel = null;
+        this.receiveFileChannel = null;
 
         this.readStream = null;
 
@@ -64,7 +68,7 @@ class Client {
     }
 
     processMessageWritable(message) {
-        switch (message.action) {
+        switch (message.type) {
             case "firstWritable":
                 console.log("first writable");
                 break;
@@ -74,22 +78,22 @@ class Client {
     }
 
     processMessage(message) {
-        switch (message.action) {
+        switch (message.type) {
             case "openDirectory":
-                this.changeDirectory(message.selectedDirectory);
+                this.changeDirectory(message.payload);
                 this.scanDirectory();
                 break;
             case "downloadFile":
-                this.sendFile(message.filePath);
+                this.sendFile(message.payload);
                 break;
             case "getThumbnail":
-                this.sendThumbnail(message.filePath);
+                this.sendThumbnail(message.payload);
                 break;
             case "getImage":
-                this.sendFile(message.filePath);
+                this.sendFile(message.payload);
                 break;
             case "getText":
-                this.sendFile(message.filePath);
+                this.sendFile(message.payload);
                 break;
             case "readyForThumbnail":
                 this.readStream.on("data", chunk => {
@@ -110,7 +114,7 @@ class Client {
         const path = pathModule.join(this.selectedRootDirectory, filePath);
         const size = sizeOf(path);
         size.then(measures => {
-            return fs.readFileAsync(path);
+            return fs.readFile(path);
         }).then(image => {
             const measures = size.value();
             return resizeImg(image, scaleImageMeasures(measures, 200));

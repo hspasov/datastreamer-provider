@@ -1,4 +1,4 @@
-const fs = window.require("fs");
+const fs = window.require("fs-extra");
 
 function getFilePermissions(path) {
     return {

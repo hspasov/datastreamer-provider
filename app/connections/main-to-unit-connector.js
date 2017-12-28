@@ -1,8 +1,7 @@
 import Socket from "./socket";
 import { changeClientDirectory } from "../store/actions/connections";
 
-const electron = window.require("electron");
-const ipcRenderer = electron.ipcRenderer;
+const { ipcRenderer } = window.require("electron");
 
 class MainToUnitConnector {
     constructor(token, pageAccessor) {
@@ -14,12 +13,10 @@ class MainToUnitConnector {
         this.deleteAll = this.deleteAll.bind(this);
 
         ipcRenderer.on("send description", (event, clientSocketId, description) => {
-            console.log("inside send description with desc=", description);
             this.socket.emit("description", description, clientSocketId);
         });
 
         ipcRenderer.on("send ICE candidate", (event, clientSocketId, candidate) => {
-            console.log(`Sending ICE candidate ${candidate} to ${clientSocketId}`);
             this.socket.emit("ice_candidate", candidate, clientSocketId);
         });
 
