@@ -14,6 +14,7 @@ import {
 } from "./connections/rtc-initialization";
 
 const fs = window.require("fs-extra");
+const trash = window.require("trash");
 const pathModule = window.require("path").posix;
 const getImageSize = window.require("image-size");
 const resizeImg = window.require("resize-img");
@@ -69,8 +70,14 @@ class Client {
 
     processMessageWritable(message) {
         switch (message.type) {
-            case "firstWritable":
-                console.log("first writable");
+            case "copyFile":
+                this.copyFile(message.payload);
+                break;
+            case "moveFile":
+                this.moveFile(message.payload);
+                break;
+            case "deleteFile":
+                this.deleteFile(message.payload);
                 break;
             default:
                 this.processMessage(message);
@@ -172,6 +179,40 @@ class Client {
             this.watcher.close();
         }
         this.watcher = watcher;
+    }
+
+    copyFile(filePath) {
+        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        const basename = pathModule.basename(filePath);
+        const destination = pathModule.join(this.selectedRootDirectory, this.currentDirectory, basename);
+        fs.copy(source, destination, {
+            overwrite: false,
+            errorOnExist: true
+        }).then(() => {
+            console.log(`${filePath} copied`);
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
+    moveFile(filePath) {
+        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        const basename = pathModule.basename(filePath);
+        const destination = pathModule.join(this.selectedRootDirectory, this.currentDirectory, basename);
+        fs.move(source, destination).then(() => {
+            console.log(`${filePath} moved`);
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+
+    deleteFile(filePath) {
+        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        trash([source], { glob: false }).then(() => {
+            console.log("deleted");
+        }).catch(error => {
+            console.log(error);
+        });
     }
 
     changeDirectory(selectedDirectory) {
