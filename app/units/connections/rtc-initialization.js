@@ -24,6 +24,7 @@ function prepareConnectionInitialization(accessRules) {
                     if (accessRules.readable && accessRules.writable) {
                         this.receiveMessageWritableChannel = event.channel;
                         this.receiveMessageWritableChannel.onmessage = event => {
+                            console.log(event.data);
                             this.processMessageWritable(JSON.parse(event.data));
                         };
                     }
@@ -33,7 +34,15 @@ function prepareConnectionInitialization(accessRules) {
                         this.receiveFileChannel = event.channel;
                         this.receiveFileChannel.binaryType = "arraybuffer";
                         this.receiveFileChannel.onmessage = event => {
-                            // this.processMessageWritable(JSON.parse(event.data));
+                            this.receivedBytes += event.data.byteLength;
+                            console.log(event.data);
+                            console.log(event.data.byteLength);
+                            if (this.receivedBytes >= this.uploadedFileData.size) {
+                                this.writeStream.end(Buffer.from(event.data));
+                                console.log("end of file");
+                            } else {
+                                this.writeStream.write(Buffer.from(event.data));
+                            }
                         };
                     }
                     break;

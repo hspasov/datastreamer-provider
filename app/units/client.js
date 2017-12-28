@@ -47,6 +47,9 @@ class Client {
         this.receiveFileChannel = null;
 
         this.readStream = null;
+        this.uploadedFileData = null;
+        this.writeStream = null
+        this.receivedBytes = 0;
 
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
         this.exchangeDescriptions = exchangeDescriptions.bind(this);
@@ -78,6 +81,14 @@ class Client {
                 break;
             case "deleteFile":
                 this.deleteFile(message.payload);
+                break;
+            case "uploadFile":
+                this.uploadedFileData = message.payload;
+                console.log(message);
+                console.log(message.payload);
+                this.writeStream = fs.createWriteStream(pathModule.join(this.selectedRootDirectory, this.currentDirectory, message.payload.name));
+                this.receivedBytes = 0;
+                this.sendMessage("readyForFile");
                 break;
             default:
                 this.processMessage(message);
