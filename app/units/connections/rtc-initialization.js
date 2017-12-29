@@ -35,8 +35,6 @@ function prepareConnectionInitialization(accessRules) {
                         this.receiveFileChannel.binaryType = "arraybuffer";
                         this.receiveFileChannel.onmessage = event => {
                             this.receivedBytes += event.data.byteLength;
-                            console.log(event.data);
-                            console.log(event.data.byteLength);
                             if (this.receivedBytes >= this.uploadedFileData.size) {
                                 this.writeStream.end(Buffer.from(event.data));
                                 console.log("end of file");
