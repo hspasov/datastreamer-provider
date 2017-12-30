@@ -6,7 +6,10 @@ const magic = new Magic(Magic.MAGIC_MIME_TYPE);
 function scanDirectory() {
     let isCurrentDirectory = true;
     const path = pathModule.join(this.selectedMainDirectory, this.currentDirectory);
-    this.setWatcher(chokidar.watch(path, this.watcherOptions));
+    if (this.watcher) {
+        this.watcher.close();
+    }
+    this.watcher = chokidar.watch(path, this.watcherOptions);
 
     this.watcher
         .on("raw", (event, path, details) => {
@@ -15,25 +18,34 @@ function scanDirectory() {
         })
         .on("add", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                this.changeScannedFiles(path, stats, mime);
-                this.sendMessage("add", this.scannedFiles.get(path));
+                return this.changeScannedFiles(path, stats, mime);
+            }).then(fileMetadata => {
+                this.sendMessage("add", fileMetadata);
+            }).catch(error => {
+                console.log(error);
             });
         })
         .on("addDir", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                this.changeScannedFiles(path, stats, mime, isCurrentDirectory);
+                return this.changeScannedFiles(path, stats, mime, isCurrentDirectory);
+            }).then(fileMetadata => {
                 if (isCurrentDirectory) {
                     isCurrentDirectory = false;
-                    this.sendMessage("sendCurrentDirectory", this.scannedFiles.get(path));
+                    this.sendMessage("sendCurrentDirectory", fileMetadata);
                 } else {
-                    this.sendMessage("addDir", this.scannedFiles.get(path));
+                    this.sendMessage("addDir", fileMetadata);
                 }
+            }).catch(error => {
+                console.log(error);
             });
         })
         .on("change", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                this.changeScannedFiles(path, stats, mime );
-                this.sendMessage("change", this.scannedFiles.get(path));
+                return this.changeScannedFiles(path, stats, mime);
+            }).then(fileMetadata => {
+                this.sendMessage("change", fileMetadata);
+            }).catch(error => {
+                console.log(error);
             });
         })
         .on("unlink", path => {

@@ -1,34 +1,34 @@
 const fs = window.require("fs-extra");
 
-function getFilePermissions(path) {
+async function getFilePermissions(path) {
     return {
-        read: canRead(path),
-        write: canWrite(path),
-        execute: canWrite(path)
+        read: await canRead(path),
+        write: await canWrite(path),
+        execute: await canWrite(path)
     };
 }
 
-function canRead(path) {
+async function canRead(path) {
     try {
-        fs.accessSync(path, fs.constants.R_OK);
+        await fs.access(path, fs.constants.R_OK);
         return true;
     } catch (e) {
         return false;
     }
 }
 
-function canWrite(path) {
+async function canWrite(path) {
     try {
-        fs.accessSync(path, fs.constants.W_OK);
+        await fs.accessSync(path, fs.constants.W_OK);
         return true;
     } catch (e) {
         return false;
     }
 }
 
-function canExecute(path) {
+async function canExecute(path) {
     try {
-        fs.accessSync(path, fs.constants.X_OK);
+        await fs.accessSync(path, fs.constants.X_OK);
         return true;
     } catch (e) {
         return false;

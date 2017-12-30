@@ -13,6 +13,7 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.7",
@@ -27,7 +28,6 @@
     "webpack-dev-server": "^2.9.7"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
     "bufferutil": "^3.0.2",
     "chokidar": "^1.7.0",
     "fbjs": "^0.8.16",
@@ -49,6 +49,7 @@
     "react-router-dom": "^4.2.2",
     "redux": "^3.7.2",
     "resize-img": "^1.1.2",
+    "sanitize-filename": "^1.6.1",
     "semantic-ui-css": "^2.2.12",
     "semantic-ui-react": "^0.76.0",
     "socket.io": "^2.0.4",

@@ -1,3 +1,4 @@
+import "babel-polyfill";
 import Client from "./client";
 const { ipcRenderer } = window.require("electron");
 

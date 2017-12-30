@@ -16,7 +16,7 @@ function prepareConnectionInitialization(accessRules) {
                     if (accessRules.readable) {
                         this.receiveMessageChannel = event.channel;
                         this.receiveMessageChannel.onmessage = event => {
-                            this.processMessage(JSON.parse(event.data));
+                            this.handleMessage(JSON.parse(event.data));
                         };
                     }
                     break;
@@ -24,8 +24,7 @@ function prepareConnectionInitialization(accessRules) {
                     if (accessRules.readable && accessRules.writable) {
                         this.receiveMessageWritableChannel = event.channel;
                         this.receiveMessageWritableChannel.onmessage = event => {
-                            console.log(event.data);
-                            this.processMessageWritable(JSON.parse(event.data));
+                            this.handleMessageWritable(JSON.parse(event.data));
                         };
                     }
                     break;
@@ -34,13 +33,7 @@ function prepareConnectionInitialization(accessRules) {
                         this.receiveFileChannel = event.channel;
                         this.receiveFileChannel.binaryType = "arraybuffer";
                         this.receiveFileChannel.onmessage = event => {
-                            this.receivedBytes += event.data.byteLength;
-                            if (this.receivedBytes >= this.uploadedFileData.size) {
-                                this.writeStream.end(Buffer.from(event.data));
-                                console.log("end of file");
-                            } else {
-                                this.writeStream.write(Buffer.from(event.data));
-                            }
+                            this.handleChunk(event.data);
                         };
                     }
                     break;
@@ -50,12 +43,9 @@ function prepareConnectionInitialization(accessRules) {
         this.sendMessageChannel = this.peerConnection.createDataChannel("providerMessage", this.dataConstraint);
         this.sendFileChannel = this.peerConnection.createDataChannel("providerFile", this.dataConstraint);
         this.sendFileChannel.binaryType = "arraybuffer";
+        this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
 
         this.sendMessageChannel.onopen = () => {
-            this.sendMessageChannel.send(JSON.stringify({
-                action: "connectSuccess",
-                message: null
-            }));
             if (this.selectedMainDirectory) {
                 this.scanDirectory();
             }

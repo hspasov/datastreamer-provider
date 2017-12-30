@@ -1,9 +1,8 @@
-import { promisify } from "bluebird";
+import sanitize from "sanitize-filename";
 import ConnectorUnit from "./connections/unit-to-main-connector";
 import getFileType from "./modules/get-file-type";
 import getFilePermissions from "./modules/get-file-permissions";
 import scanDirectory from "./modules/scan-directory";
-import scaleImageMeasures from "./modules/scale-image-measures"
 import {
     prepareConnectionInitialization,
     exchangeDescriptions,
@@ -13,10 +12,6 @@ import {
 const fs = window.require("fs-extra");
 const trash = window.require("trash");
 const pathModule = window.require("path").posix;
-const getImageSize = window.require("image-size");
-const resizeImg = window.require("resize-img");
-
-const sizeOf = promisify(getImageSize);
 
 class Client {
     constructor(unitData, selectedMainDirectory, currentDirectory = ".", watcherOptions = {
@@ -47,6 +42,7 @@ class Client {
         this.uploadedFileData = null;
         this.writeStream = null
         this.receivedBytes = 0;
+        this.bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
 
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
         this.exchangeDescriptions = exchangeDescriptions.bind(this);
@@ -57,7 +53,11 @@ class Client {
     }
 
     initializeScan(selectedDirectory) {
-        this.restart();
+        if (this.watcher) {
+            this.watcher.close();
+        }
+        this.currentDirectory = ".";
+        this.scannedFiles = new Map();
         this.selectedMainDirectory = selectedDirectory;
         if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
             this.scanDirectory();
@@ -68,7 +68,7 @@ class Client {
         console.log(error);
     }
 
-    processMessageWritable(message) {
+    handleMessageWritable(message) {
         switch (message.type) {
             case "copyFile":
                 this.copyFile(message.payload);
@@ -80,31 +80,21 @@ class Client {
                 this.deleteFile(message.payload);
                 break;
             case "uploadFile":
-                this.uploadedFileData = message.payload;
-                console.log(message);
-                console.log(message.payload);
-                this.writeStream = fs.createWriteStream(pathModule.join(this.selectedMainDirectory, this.currentDirectory, message.payload.name));
-                this.receivedBytes = 0;
-                this.sendMessage("readyForFile");
+                this.prepareUpload(message.data);
                 break;
             default:
-                this.processMessage(message);
+                this.handleMessage(message);
         }
     }
 
-    processMessage(message) {
+    handleMessage(message) {
         switch (message.type) {
             case "openDirectory":
                 this.changeDirectory(message.payload);
                 this.scanDirectory();
                 break;
             case "downloadFile":
-                this.sendFile(message.payload);
-                break;
-            case "getImage":
-                this.sendFile(message.payload);
-                break;
-            case "getText":
+                console.log(message.payload);
                 this.sendFile(message.payload);
                 break;
             case "message":
@@ -113,19 +103,58 @@ class Client {
         }
     }
 
-    sendFile(filePath) {
+    handleChunk(chunk) {
         try {
-            const path = pathModule.join(this.selectedMainDirectory, filePath);
+            this.receivedBytes += chunk.byteLength;
+            if (this.receivedBytes >= this.uploadedFileData.size) {
+                this.writeStream.end(Buffer.from(chunk));
+                console.log("end of file");
+            } else {
+                this.writeStream.write(Buffer.from(chunk));
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    prepareUpload(fileData) {
+        this.uploadedFileData = fileData;
+        const sanitizedFileName = sanitize(path.basename(fileData.name));
+        if (!sanitizedFileName) {
+            console.log("Invalid file name");
+            return;
+        }
+        const filePath = pathModule.join(
+            this.selectedMainDirectory,
+            this.currentDirectory,
+            sanitizedFileName
+        );
+        this.writeStream = fs.createWriteStream(filePath);
+        this.writeStream.on("finish", () => {
+            this.writeStream = null;
+            this.uploadedFileData = null;
+        });
+        this.writeStream.on("error", error => {
+            this.writeStream.end();
+            console.log(error);
+        });
+        this.receivedBytes = 0;
+        this.sendMessage("readyForFile");
+    }
+
+    sendFile(filePath) {
+        console.log(filePath);
+        try {
+            const path = this.resolvePath(filePath);
+            console.log(path);
             this.readStream = fs.createReadStream(path);
-            const bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
-            this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
             this.sendFileChannel.onbufferedamountlow = () => {
                 if (this.readStream) {
                     this.readStream.resume();
                 }
             }
             this.readStream.on("data", chunk => {
-                if (this.sendFileChannel.bufferedAmount > bufferedAmountHighThreshold) {
+                if (this.sendFileChannel.bufferedAmount > this.bufferedAmountHighThreshold) {
                     this.readStream.pause();
                 }
                 this.sendFileChannel.send(chunk);
@@ -158,40 +187,41 @@ class Client {
         }
     }
 
-    setWatcher(watcher) {
-        if (this.watcher) {
-            this.watcher.close();
-        }
-        this.watcher = watcher;
-    }
-
     copyFile(filePath) {
-        const source = pathModule.join(this.selectedMainDirectory, filePath);
-        const basename = pathModule.basename(filePath);
+        const source = this.resolvePath(filePath);
+        const basename = sanitize(pathModule.basename(filePath));
+        if (!basename) {
+            console.log("Invalid path");
+            return;
+        }
         const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.copy(source, destination, {
             overwrite: false,
             errorOnExist: true
         }).then(() => {
-            console.log(`${filePath} copied`);
+            console.log(`${source} copied`);
         }).catch(error => {
             console.log(error);
         });
     }
 
     moveFile(filePath) {
-        const source = pathModule.join(this.selectedMainDirectory, filePath);
-        const basename = pathModule.basename(filePath);
+        const source = this.resolvePath(filePath);
+        const basename = sanitize(pathModule.basename(filePath));
+        if (!basename) {
+            console.log("Invalid path");
+            return;
+        }
         const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.move(source, destination).then(() => {
-            console.log(`${filePath} moved`);
+            console.log(`${source} moved`);
         }).catch(error => {
             console.log(error);
         });
     }
 
     deleteFile(filePath) {
-        const source = pathModule.join(this.selectedMainDirectory, filePath);
+        const source = this.resolvePath(filePath);
         trash([source], { glob: false }).then(() => {
             console.log("deleted");
         }).catch(error => {
@@ -200,6 +230,7 @@ class Client {
     }
 
     changeDirectory(selectedDirectory) {
+        const path = this.resolvePath(selectedDirectory);
         if (!selectedDirectory) {
             throw `Invalid directory ${selectedDirectory}`;
         }
@@ -207,17 +238,23 @@ class Client {
             this.watcher.close();
         }
         this.watcher = null;
-        this.currentDirectory = selectedDirectory;
-        this.connector.changeDirectory(pathModule.join(this.selectedMainDirectory, this.currentDirectory));
+        this.currentDirectory = path.substring(this.selectedMainDirectory.length);
+        console.log(this.currentDirectory);
+        this.connector.changeDirectory(path);
         this.scannedFiles = new Map();
     }
 
-    changeScannedFiles(path, stats, mime, isCurrentDirectory = false) {
+    async changeScannedFiles(path, stats, mime, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path ${path}`;
         }
-        let fileMetadata = this.getFileMetadata(path, stats, mime, isCurrentDirectory);
-        this.scannedFiles.set(path, fileMetadata);
+        try {
+            const fileMetadata = await this.getFileMetadata(path, stats, mime, isCurrentDirectory);
+            this.scannedFiles.set(path, fileMetadata);
+            return fileMetadata;
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     removeFromScannedFiles(path) {
@@ -227,7 +264,7 @@ class Client {
         this.scannedFiles.delete(path);
     }
 
-    getFileMetadata(path, stats, mime, isCurrentDirectory = false) {
+    async getFileMetadata(path, stats, mime, isCurrentDirectory = false) {
         if (!path) {
             throw `Invalid path, ${path}`;
         }
@@ -237,22 +274,15 @@ class Client {
             path: isCurrentDirectory ?
                 this.currentDirectory : pathModule.join(this.currentDirectory, fileName),
             type: getFileType(path, stats),
-            access: getFilePermissions(path),
+            access: await getFilePermissions(path),
             size: stats.size,
             mime
         };
     }
 
-    restart() {
-        this.delete();
-        this.currentDirectory = ".";
-        this.scannedFiles = new Map();
-    }
-
-    delete() {
-        if (this.watcher) {
-            this.watcher.close();
-        }
+    resolvePath(path) {
+        const splitAndSanitized = path.split(pathModule.sep).map(segment => sanitize(segment));
+        return pathModule.join(this.selectedMainDirectory, ...splitAndSanitized);
     }
 
     deleteP2PConnection(error=null) {
