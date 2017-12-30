@@ -4,7 +4,7 @@ import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui
 import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
-import { setAccess, removeClient } from "../../store/actions/connections";
+import { addClient, setAccess, changeClientDirectory, removeClient } from "../../store/actions/connections";
 import formurlencoded from "form-urlencoded";
 import {
     setMainDirectory,
@@ -12,10 +12,7 @@ import {
     setDefaultAccess,
     toggleDefaultWritable
 } from "../../store/actions/settings";
-import {
-    addBanned,
-    removeBanned
-} from "../../store/actions/banned";
+import { addBanned, removeBanned } from "../../store/actions/banned";
 import {
     connectSuccess,
     connectError,
@@ -84,7 +81,7 @@ class DataWatcher extends React.Component {
         }).then(response => {
             if (response.status === 200) {
                 this.connector.deleteClient(client.id);
-                this.props.dispatch(removeClient(client.id));
+                this.props.removeClient(client.id);
             } else {
                 throw response.status;
             }
@@ -100,13 +97,13 @@ class DataWatcher extends React.Component {
     handleSelectMainDirectory(event) {
         if (event.target.files[0]) {
             let dirPath = event.target.files[0].path;
-            this.connector.selectedRootDirectory = dirPath; // <- very ugly, change it
-            this.props.dispatch(setMainDirectory(dirPath));
+            this.connector.selectedMainDirectory = dirPath;
+            this.props.setMainDirectory(dirPath);
         }
     }
 
     handleRemoveBan(client) {
-        this.props.dispatch(removeBanned(client.username));
+        this.props.removeBanned(client.username);
     }
 
     handleToggleDefaultAccessRule(accessRule) {
@@ -131,7 +128,7 @@ class DataWatcher extends React.Component {
                 throw response.status;
             }
         }).then(json => {
-            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
+            this.props.setDefaultAccess(json.readable, json.writable);
         }).catch(errorCode => {
             switch (errorCode) {
                 case 400:
@@ -174,7 +171,7 @@ class DataWatcher extends React.Component {
                 throw response;
             }
         }).then(json => {
-            this.props.dispatch(setAccess(clientId, json.readable, json.writable));
+            this.props.setAccess(clientId, json.readable, json.writable);
         }).catch(errorCode => {
             switch (errorCode.status) {
                 case 400:
@@ -203,31 +200,31 @@ class DataWatcher extends React.Component {
     statusHandler(status) {
         switch (status.event) {
             case "connect":
-                this.props.dispatch(connectSuccess());
+                this.props.connectSuccess();
                 break;
             case "connect_error":
-                this.props.dispatch(connectError());
+                this.props.connectError();
                 break;
             case "invalid_token":
-                this.props.dispatch(invalidToken());
+                this.props.invalidToken();
                 break;
             case "invalid_client_token":
-                this.props.dispatch(invalidClientToken());
+                this.props.invalidClientToken();
                 break;
             case "invalid_request":
-                this.props.dispatch(invalidRequest());
+                this.props.invalidRequest();
                 break;
             case "connect_timeout":
-                this.props.dispatch(connectTimeout());
+                this.props.connectTimeout();
                 break;
             case "error":
-                this.props.dispatch(error());
+                this.props.error();
                 break;
             case "disconnect":
-                this.props.dispatch(disconnect());
+                this.props.disconnect();
                 break;
             case "reconnect_failed":
-                this.props.dispatch(reconnectFail());
+                this.props.reconnectFail();
                 break;
         }
     }
@@ -328,6 +325,26 @@ const DataWatcherPage = connect(store => {
         status: store.status,
         banned: store.banned
     };
+}, {
+    addClient,
+    setAccess,
+    changeClientDirectory,
+    removeClient,
+    setMainDirectory,
+    toggleDefaultReadable,
+    setDefaultAccess,
+    toggleDefaultWritable,
+    addBanned,
+    removeBanned,
+    connectSuccess,
+    connectError,
+    invalidToken,
+    invalidClientToken,
+    invalidRequest,
+    connectTimeout,
+    disconnect,
+    reconnectFail,
+    error
 })(DataWatcher);
 
 export default DataWatcherPage;

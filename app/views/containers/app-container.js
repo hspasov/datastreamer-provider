@@ -1,9 +1,5 @@
 import React from "react";
-import { Button } from "semantic-ui-react";
-import { Route, Switch } from "react-router-dom";
-import { push } from "react-router-redux";
-import { connect } from "react-redux";
-
+import { Route, Switch, withRouter } from "react-router-dom";
 import DataWatcherPage from "../pages/data-watcher-page";
 import LoginPage from "../pages/login-page";
 import RegisterPage from "../pages/register-page";
@@ -15,7 +11,7 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.props.dispatch(push("/login"));
+        this.props.history.push("/login");
     }
 
     render() {
@@ -30,11 +26,6 @@ class App extends React.Component {
     }
 }
 
-const AppContainer = connect(store => {
-    return {
-        provider: store.provider,
-        router: store.router
-    };
-})(App);
+const AppContainer = withRouter(App);
 
 export default AppContainer;

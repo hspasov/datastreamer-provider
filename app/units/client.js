@@ -1,11 +1,8 @@
-import mime from "mime";
-import fileExtension from "file-extension";
-import bluebird from "bluebird";
+import { promisify } from "bluebird";
 import ConnectorUnit from "./connections/unit-to-main-connector";
 import getFileType from "./modules/get-file-type";
 import getFilePermissions from "./modules/get-file-permissions";
 import scanDirectory from "./modules/scan-directory";
-import BufferStream from "./modules/buffer-stream";
 import scaleImageMeasures from "./modules/scale-image-measures"
 import {
     prepareConnectionInitialization,
@@ -19,10 +16,10 @@ const pathModule = window.require("path").posix;
 const getImageSize = window.require("image-size");
 const resizeImg = window.require("resize-img");
 
-const sizeOf = bluebird.promisify(getImageSize);
+const sizeOf = promisify(getImageSize);
 
 class Client {
-    constructor(unitData, selectedRootDirectory, currentDirectory = ".", watcherOptions = {
+    constructor(unitData, selectedMainDirectory, currentDirectory = ".", watcherOptions = {
         ignored: /[\/\\]\./,
         persistent: true,
         usePolling: true,
@@ -30,7 +27,7 @@ class Client {
         depth: 0
     }) {
         this.id = unitData.clientSocketId;
-        this.selectedRootDirectory = selectedRootDirectory;
+        this.selectedMainDirectory = selectedMainDirectory;
         this.currentDirectory = currentDirectory;
         this.scannedFiles = new Map();
         this.watcher = null;
@@ -61,7 +58,7 @@ class Client {
 
     initializeScan(selectedDirectory) {
         this.restart();
-        this.selectedRootDirectory = selectedDirectory;
+        this.selectedMainDirectory = selectedDirectory;
         if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
             this.scanDirectory();
         }
@@ -86,7 +83,7 @@ class Client {
                 this.uploadedFileData = message.payload;
                 console.log(message);
                 console.log(message.payload);
-                this.writeStream = fs.createWriteStream(pathModule.join(this.selectedRootDirectory, this.currentDirectory, message.payload.name));
+                this.writeStream = fs.createWriteStream(pathModule.join(this.selectedMainDirectory, this.currentDirectory, message.payload.name));
                 this.receivedBytes = 0;
                 this.sendMessage("readyForFile");
                 break;
@@ -104,23 +101,11 @@ class Client {
             case "downloadFile":
                 this.sendFile(message.payload);
                 break;
-            case "getThumbnail":
-                this.sendThumbnail(message.payload);
-                break;
             case "getImage":
                 this.sendFile(message.payload);
                 break;
             case "getText":
                 this.sendFile(message.payload);
-                break;
-            case "readyForThumbnail":
-                this.readStream.on("data", chunk => {
-                    this.sendFileChannel.send(chunk);
-                });
-                this.readStream.on("end", () => {
-                    console.log("end of file streaming");
-                    this.readStream = null;
-                });
                 break;
             case "message":
                 console.log(message.message);
@@ -128,29 +113,17 @@ class Client {
         }
     }
 
-    sendThumbnail(filePath) {
-        const path = pathModule.join(this.selectedRootDirectory, filePath);
-        const size = sizeOf(path);
-        size.then(measures => {
-            return fs.readFile(path);
-        }).then(image => {
-            const measures = size.value();
-            return resizeImg(image, scaleImageMeasures(measures, 200));
-        }).then(resized => {
-            this.sendMessage("sendThumbnailSize", resized.length);
-            this.readStream = new BufferStream(resized);
-        }).catch(error => {
-            console.log(error);
-        });
-    }
-
     sendFile(filePath) {
         try {
-            const path = pathModule.join(this.selectedRootDirectory, filePath);
+            const path = pathModule.join(this.selectedMainDirectory, filePath);
             this.readStream = fs.createReadStream(path);
             const bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
             this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
-            this.sendFileChannel.onbufferedamountlow = () => this.readStream.resume();
+            this.sendFileChannel.onbufferedamountlow = () => {
+                if (this.readStream) {
+                    this.readStream.resume();
+                }
+            }
             this.readStream.on("data", chunk => {
                 if (this.sendFileChannel.bufferedAmount > bufferedAmountHighThreshold) {
                     this.readStream.pause();
@@ -193,9 +166,9 @@ class Client {
     }
 
     copyFile(filePath) {
-        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        const source = pathModule.join(this.selectedMainDirectory, filePath);
         const basename = pathModule.basename(filePath);
-        const destination = pathModule.join(this.selectedRootDirectory, this.currentDirectory, basename);
+        const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.copy(source, destination, {
             overwrite: false,
             errorOnExist: true
@@ -207,9 +180,9 @@ class Client {
     }
 
     moveFile(filePath) {
-        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        const source = pathModule.join(this.selectedMainDirectory, filePath);
         const basename = pathModule.basename(filePath);
-        const destination = pathModule.join(this.selectedRootDirectory, this.currentDirectory, basename);
+        const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.move(source, destination).then(() => {
             console.log(`${filePath} moved`);
         }).catch(error => {
@@ -218,7 +191,7 @@ class Client {
     }
 
     deleteFile(filePath) {
-        const source = pathModule.join(this.selectedRootDirectory, filePath);
+        const source = pathModule.join(this.selectedMainDirectory, filePath);
         trash([source], { glob: false }).then(() => {
             console.log("deleted");
         }).catch(error => {
@@ -235,7 +208,7 @@ class Client {
         }
         this.watcher = null;
         this.currentDirectory = selectedDirectory;
-        this.connector.changeDirectory(pathModule.join(this.selectedRootDirectory, this.currentDirectory));
+        this.connector.changeDirectory(pathModule.join(this.selectedMainDirectory, this.currentDirectory));
         this.scannedFiles = new Map();
     }
 
@@ -266,8 +239,7 @@ class Client {
             type: getFileType(path, stats),
             access: getFilePermissions(path),
             size: stats.size,
-            mime,
-            thumbnail: ""
+            mime
         };
     }
 
@@ -284,14 +256,12 @@ class Client {
     }
 
     deleteP2PConnection(error=null) {
-        this.sendMessageChannel && console.log("Closed data channel with label: " + this.sendMessageChannel.label);
         this.sendMessageChannel && this.sendMessageChannel.close();
-        this.sendFileChannel && console.log("Closed data channel with label: " + this.sendFileChannel.label);
         this.sendFileChannel && this.sendFileChannel.close();
-        this.receiceMessageChannel && console.log("Closed data channel with label: " + this.receiveMessageChannel.label);
         this.receiveMessageChannel && this.receiveMessageChannel.close();
+        this.receiveMessageWritableChannel && this.receiveMessageWritableChannel.close();
+        this.receiveFileChannel && this.receiveFileChannel.close();
         this.peerConnection && this.peerConnection.close();
-        console.log("Closed peer connection");
         if (error) {
             this.connector.resetConnection();
         }

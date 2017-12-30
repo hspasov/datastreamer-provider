@@ -56,7 +56,7 @@ function prepareConnectionInitialization(accessRules) {
                 action: "connectSuccess",
                 message: null
             }));
-            if (this.selectedRootDirectory) {
+            if (this.selectedMainDirectory) {
                 this.scanDirectory();
             }
         }

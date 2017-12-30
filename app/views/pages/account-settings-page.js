@@ -1,8 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
-import { push } from "react-router-redux";
+import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import { loginProvider, logoutProvider } from "../../store/actions/provider";
@@ -69,11 +68,11 @@ class AccountSettings extends React.Component {
                 throw response.status;
             }
         }).then(json => {
-            this.props.dispatch(loginProvider({
+            this.props.loginProvider({
                 token: json.token,
                 username: this.props.provider.username
-            }));
-            this.props.dispatch(push("/datawatcher"));
+            });
+            this.props.history.push("/datawatcher");
         }).catch(errorCode => {
             console.log(errorCode);
             let formErrors;
@@ -121,8 +120,8 @@ class AccountSettings extends React.Component {
             body: formurlencoded(formData)
         }).then(response => {
             if (response.status === 200) {
-                this.props.dispatch(logoutProvider());
-                this.props.dispatch(push("/login"));
+                this.props.logoutProvider();
+                this.props.history.push("/login");
             } else {
                 throw response.status;
             }
@@ -285,11 +284,11 @@ class AccountSettings extends React.Component {
     }
 }
 
-const AccountSettingsPage = connect(store => {
+const AccountSettingsPage = withRouter(connect(store => {
     return {
         provider: store.provider,
         router: store.router
     };
-})(AccountSettings);
+}, { loginProvider, logoutProvider })(AccountSettings));
 
 export default AccountSettingsPage;

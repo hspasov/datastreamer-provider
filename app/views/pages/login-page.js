@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { push } from "react-router-redux";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
@@ -70,12 +69,11 @@ class Login extends React.Component {
             }
         }).then(json => {
             console.log(json);
-            this.props.dispatch(loginProvider(json));
-            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
-            this.props.dispatch(addAllBanned(json.banned));
-            this.props.dispatch(push("/datawatcher"));
+            this.props.loginProvider(json);
+            this.props.setDefaultAccess(json.readable, json.writable);
+            this.props.addAllBanned(json.banned);
+            this.props.history.push("/datawatcher");
         }).catch(errorCode => {
-            console.log(errorCode);
             let formErrors;
             switch (errorCode) {
                 case 404:
@@ -153,12 +151,10 @@ class Login extends React.Component {
     }
 }
 
-const LoginPage = connect(store => {
-    return {
-        provider: store.provider,
-        settings: store.settings,
-        banned: store.banned
-    };
-})(Login)
+const LoginPage = withRouter(connect(null, {
+    setDefaultAccess,
+    loginProvider,
+    addAllBanned
+})(Login));
 
 export default LoginPage;

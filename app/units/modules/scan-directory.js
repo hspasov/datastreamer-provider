@@ -5,7 +5,7 @@ const magic = new Magic(Magic.MAGIC_MIME_TYPE);
 
 function scanDirectory() {
     let isCurrentDirectory = true;
-    const path = pathModule.join(this.selectedRootDirectory, this.currentDirectory);
+    const path = pathModule.join(this.selectedMainDirectory, this.currentDirectory);
     this.setWatcher(chokidar.watch(path, this.watcherOptions));
 
     this.watcher

@@ -1,5 +1,4 @@
 import Socket from "./socket";
-import { changeClientDirectory } from "../store/actions/connections";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -7,7 +6,7 @@ class MainToUnitConnector {
     constructor(token, pageAccessor) {
         this.socket = new Socket(this, token, pageAccessor).socket;
 
-        this.selectedRootDirectory = "";
+        this.selectedMainDirectory = "";
         this.initializeScan = this.initializeScan.bind(this);
         this.connectToClients = this.connectToClients.bind(this);
         this.deleteAll = this.deleteAll.bind(this);
@@ -30,13 +29,13 @@ class MainToUnitConnector {
 
         ipcRenderer.on("change directory", (event, clientSocketId, directory) => {
             pageAccessor(function () {
-                this.props.dispatch(changeClientDirectory(clientSocketId, directory));
+                this.props.changeClientDirectory(clientSocketId, directory);
             });
         });
     }
 
-    createUnit(unitData, selectedRootDirectory) {
-        ipcRenderer.send("create unit", unitData, selectedRootDirectory);
+    createUnit(unitData, selectedMainDirectory) {
+        ipcRenderer.send("create unit", unitData, selectedMainDirectory);
     }
 
     receiveDescription(clientSocketId, description) {
@@ -52,10 +51,10 @@ class MainToUnitConnector {
     }
 
     initializeScan() {
-        if (!this.selectedRootDirectory) {
+        if (!this.selectedMainDirectory) {
             console.log("Please select a directory to scan");
         } else {
-            ipcRenderer.send("initialize scan", this.selectedRootDirectory);
+            ipcRenderer.send("initialize scan", this.selectedMainDirectory);
         }
     }
 
@@ -70,7 +69,7 @@ class MainToUnitConnector {
     }
 
     resetUnit(clientSocketId) {
-        ipcRenderer.send("reset unit", clientSocketId, this.selectedRootDirectory);
+        ipcRenderer.send("reset unit", clientSocketId, this.selectedMainDirectory);
     }
 }
 

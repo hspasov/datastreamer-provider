@@ -1,5 +1,4 @@
 import { combineReducers } from "redux";
-import { routerReducer } from "react-router-redux";
 
 import provider from "./provider";
 import settings from "./settings";
@@ -12,6 +11,5 @@ export default combineReducers({
     settings,
     connections,
     banned,
-    status,
-    router: routerReducer
+    status
 });

@@ -5,7 +5,7 @@ const { BrowserWindow, ipcMain } = require("electron");
 function ipcHandler(mainWindow) {
     let socketIdUnitMap = new Map();
 
-    ipcMain.on("create unit", (event, unitData, selectedRootDirectory) => {
+    ipcMain.on("create unit", (event, unitData, selectedMainDirectory) => {
         const browserWindow = new BrowserWindow({
             parent: mainWindow,
             show: false
@@ -24,7 +24,7 @@ function ipcHandler(mainWindow) {
         }));
         unit.browserWindow.once("ready-to-show", () => {
             unit.browserWindow.show();
-            unit.browserWindow.webContents.send("initialize", unitData, selectedRootDirectory);
+            unit.browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
         });
     });
 
@@ -58,9 +58,9 @@ function ipcHandler(mainWindow) {
         mainWindow.webContents.send("reset connection", clientSocketId);
     });
 
-    ipcMain.on("initialize scan", (event, selectedRootDirectory) => {
+    ipcMain.on("initialize scan", (event, selectedMainDirectory) => {
         socketIdUnitMap.forEach(unit => {
-            unit.browserWindow.webContents.send("initialize scan", selectedRootDirectory);
+            unit.browserWindow.webContents.send("initialize scan", selectedMainDirectory);
         });
     });
 
@@ -95,7 +95,7 @@ function ipcHandler(mainWindow) {
         }));
         unit.browserWindow.once("ready-to-show", () => {
             unit.browserWindow.show();
-            unit.browserWindow.webContents.send("initialize", unitData, selectedRootDirectory);
+            unit.browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
         });
     });
 

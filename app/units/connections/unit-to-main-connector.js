@@ -17,8 +17,8 @@ class UnitToMainConnector {
             this.client.receiveICECandidate(JSON.parse(candidate));
         });
 
-        ipcRenderer.on("initialize scan", (event, selectedRootDirectory) => {
-            this.client.initializeScan(selectedRootDirectory);
+        ipcRenderer.on("initialize scan", (event, selectedMainDirectory) => {
+            this.client.initializeScan(selectedMainDirectory);
         });
 
         ipcRenderer.send("inside unit");

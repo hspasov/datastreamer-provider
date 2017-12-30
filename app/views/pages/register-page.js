@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
@@ -114,8 +114,8 @@ class Register extends React.Component {
                 throw response.status;
             }
         }).then(json => {
-            this.props.dispatch(loginProvider(json));
-            this.props.dispatch(setDefaultAccess(json.readable, json.writable));
+            this.props.loginProvider(json);
+            this.props.setDefaultAccess(json.readable, json.writable);
             this.props.history.push("/datawatcher");
         }).catch(errorCode => {
             let formErrors;
@@ -225,11 +225,9 @@ class Register extends React.Component {
     }
 }
 
-const RegisterPage = connect(store => {
-    return {
-        provider: store.provider,
-        settings: store.settigns
-    };
-})(Register);
+const RegisterPage = withRouter(connect(null, {
+    loginProvider,
+    setDefaultAccess
+})(Register));
 
 export default RegisterPage;

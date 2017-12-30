@@ -1,5 +1,4 @@
 import io from "socket.io-client";
-import { addClient, removeClient } from "../store/actions/connections";
 
 function Socket(connector, token, pageAccessor) {
     this.connector = connector;
@@ -57,23 +56,23 @@ function Socket(connector, token, pageAccessor) {
     this.socket.on("client_disconnect", clientSocketId => {
         this.connector.deleteClient(clientSocketId);
         pageAccessor(function () {
-            this.props.dispatch(removeClient(clientSocketId));
+            this.props.removeClient(clientSocketId);
         });
     });
 
     this.socket.on("client_connect", (clientSocketId, token, username, accessRules) => {
         this.connector.createUnit({
             clientSocketId, token, username, accessRules
-        }, this.connector.selectedRootDirectory);
+        }, this.connector.selectedMainDirectory);
         pageAccessor(function () {
-            this.props.dispatch(addClient({
+            this.props.addClient({
                 id: clientSocketId,
                 token,
                 username,
                 readable: accessRules.readable,
                 writable: accessRules.writable,
-                directory: this.connector.selectedRootDirectory
-            }));
+                directory: this.connector.selectedMainDirectory
+            });
         });
     });
 
