@@ -1,22 +1,22 @@
-const addAllBanned = banned => {
+function addAllBanned(banned) {
     return {
         type: "ADD_ALL_BANNED",
         payload: banned
     };
 };
 
-const removeAllBanned = () => {
+function removeAllBanned() {
     return { type: "REMOVE_ALL_BANNED" };
 };
 
-const addBanned = banned => {
+function addBanned(banned) {
     return {
         type: "ADD_BANNED",
         payload: banned
     };
 };
 
-const removeBanned = bannedUsername => {
+function removeBanned(bannedUsername) {
     return {
         type: "REMOVE_BANNED",
         payload: bannedUsername

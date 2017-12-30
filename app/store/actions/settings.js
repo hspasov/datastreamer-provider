@@ -1,22 +1,22 @@
-const setMainDirectory = selectedDirectory => {
+function setMainDirectory(selectedDirectory) {
     return {
         type: "SET_MAIN_DIR",
         payload: selectedDirectory
     };
 }
 
-const setDefaultAccess = (readable, writable) => {
+function setDefaultAccess(readable, writable) {
     return {
         type: "SET_ACCESS",
         payload: { readable, writable }
     };
 }
 
-const toggleDefaultReadable = () => {
+function toggleDefaultReadable() {
     return { type: "TOGGLE_READABLE" };
 }
 
-const toggleDefaultWritable = () => {
+function toggleDefaultWritable() {
     return { type: "TOGGLE_WRITABLE" };
 }
 

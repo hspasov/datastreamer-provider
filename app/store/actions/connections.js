@@ -1,39 +1,39 @@
-const addClient = client => {
+function addClient(client) {
     return {
         type: "ADD",
         payload: client
     };
 }
 
-const removeClient = id => {
+function removeClient(id) {
     return {
         type: "REMOVE",
         payload: id
     };
 }
 
-const setAccess = (id, readable, writable) => {
+function setAccess(id, readable, writable) {
     return {
         type: "SET_ACCESS",
         payload: { id, readable, writable }
     };
 }
 
-const toggleReadable = id => {
+function toggleReadable(id) {
     return {
         type: "TOGGLE_READABLE",
         payload: id
     };
 }
 
-const toggleWritable = id => {
+function toggleWritable(id) {
     return {
         type: "TOGGLE_WRITABLE",
         payload: id
     };
 }
 
-const changeClientDirectory = (id, directory) => {
+function changeClientDirectory(id, directory) {
     return {
         type: "CHANGE_DIRECTORY",
         payload: { id, directory }

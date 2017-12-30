@@ -1,36 +1,36 @@
-const connectSuccess = () => {
+function connectSuccess() {
     return { type: "CONNECT_SUCCESS" };
 }
 
-const connectError = () => {
+function connectError() {
     return { type: "CONNECT_ERROR" };
 }
 
-const invalidToken = () => {
+function invalidToken() {
     return { type: "INVALID_TOKEN" };
 }
 
-const invalidClientToken = () => {
+function invalidClientToken() {
     return { type: "INVALID_CLIENT_TOKEN" };
 }
 
-const invalidRequest = () => {
+function invalidRequest() {
     return { type: "INVALID_REQUEST" };
 }
 
-const connectTimeout = () => {
+function connectTimeout() {
     return { type: "CONNECT_TIMEOUT" };
 }
 
-const disconnect = () => {
+function disconnect() {
     return { type: "DISCONNECT" };
 }
 
-const reconnectFail = () => {
+function reconnectFail() {
     return { type: "RECONNECT_FAIL" };
 }
 
-const error = () => {
+function error() {
     return { type: "ERROR" };
 }
 

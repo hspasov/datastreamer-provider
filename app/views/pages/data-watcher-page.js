@@ -229,8 +229,8 @@ class DataWatcher extends React.Component {
         }
     }
 
-    pageAccessor(modify) {
-        modify.bind(this)();
+    pageAccessor(action) {
+        action.bind(this)();
     }
 
     render() {

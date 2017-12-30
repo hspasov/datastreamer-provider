@@ -1,11 +1,11 @@
-const loginProvider = providerData => {
+function loginProvider(providerData) {
     return {
         type: "LOGIN_PROVIDER",
         payload: providerData
     };
 }
 
-const logoutProvider = () => {
+function logoutProvider() {
     return { type: "LOGOUT_PROVIDER" };
 }
 

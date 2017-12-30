@@ -11,6 +11,7 @@ function scanDirectory() {
     }
     this.watcher = chokidar.watch(path, this.watcherOptions);
 
+    this.sendMessage("newScan");
     this.watcher
         .on("raw", (event, path, details) => {
             // This event should be triggered everytime something happens.
@@ -31,7 +32,6 @@ function scanDirectory() {
             }).then(fileMetadata => {
                 if (isCurrentDirectory) {
                     isCurrentDirectory = false;
-                    this.sendMessage("sendCurrentDirectory", fileMetadata);
                 } else {
                     this.sendMessage("addDir", fileMetadata);
                 }
@@ -61,7 +61,7 @@ function scanDirectory() {
         })
         .on("ready", () => {
             console.info("Initial scan has been completed.");
-            this.sendMessage("doneSending");
+            this.sendMessage("scanFinished");
         });
 }
 

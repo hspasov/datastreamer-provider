@@ -80,7 +80,7 @@ class Client {
                 this.deleteFile(message.payload);
                 break;
             case "uploadFile":
-                this.prepareUpload(message.data);
+                this.prepareUpload(message.payload);
                 break;
             default:
                 this.handleMessage(message);
@@ -119,7 +119,8 @@ class Client {
 
     prepareUpload(fileData) {
         this.uploadedFileData = fileData;
-        const sanitizedFileName = sanitize(path.basename(fileData.name));
+        console.log(fileData);
+        const sanitizedFileName = sanitize(pathModule.basename(fileData.name));
         if (!sanitizedFileName) {
             console.log("Invalid file name");
             return;

@@ -46,9 +46,7 @@ function prepareConnectionInitialization(accessRules) {
         this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
 
         this.sendMessageChannel.onopen = () => {
-            if (this.selectedMainDirectory) {
                 this.scanDirectory();
-            }
         }
         this.connector.requestP2PConnection();
     } catch (e) {
