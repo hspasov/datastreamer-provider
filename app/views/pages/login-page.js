@@ -8,6 +8,7 @@ import { addAllBanned } from "../../store/actions/banned";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
 import FormSubmitError from "../components/form-submit-error";
+import config from "../../../config.json";
 
 class Login extends React.Component {
     constructor(props) {
@@ -57,7 +58,7 @@ class Login extends React.Component {
             password: this.state.password
         };
 
-        fetch("https://datastreamer.local:3000/provider/login", {
+        fetch(`${config.uri}/provider/login`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)

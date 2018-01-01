@@ -6,6 +6,7 @@ import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import { loginProvider, logoutProvider } from "../../store/actions/provider";
 import FormSubmitError from "../components/form-submit-error";
+import config from "../../../config.json";
 
 class AccountSettings extends React.Component {
     constructor(props) {
@@ -57,7 +58,7 @@ class AccountSettings extends React.Component {
             newPassword: this.state.newPassword
         };
 
-        fetch("https://datastreamer.local:3000/provider/account", {
+        fetch(`${config.uri}/provider/account`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formurlencoded(formData)
@@ -114,7 +115,7 @@ class AccountSettings extends React.Component {
             token: this.props.provider.token,
             password: this.state.deleteAccountPassword
         };
-        fetch("https://datastreamer.local:3000/provider/delete", {
+        fetch(`${config.uri}/provider/delete`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formurlencoded(formData)

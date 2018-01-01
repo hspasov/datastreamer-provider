@@ -24,6 +24,7 @@ import {
     reconnectFail,
     error
 } from "../../store/actions/status";
+import config from "../../../config.json";
 const { dialog } = window.require("electron");
 
 class DataWatcher extends React.Component {
@@ -74,7 +75,7 @@ class DataWatcher extends React.Component {
         const formData = {
             connectionToken: client.token
         };
-        fetch("https://datastreamer.local:3000/disconnect", {
+        fetch(`${config.uri}/disconnect`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formurlencoded(formData)
@@ -117,7 +118,7 @@ class DataWatcher extends React.Component {
             readable,
             writable
         };
-        fetch("https://datastreamer.local:3000/access/default", {
+        fetch(`${config.uri}/access/default`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
@@ -160,7 +161,7 @@ class DataWatcher extends React.Component {
             readable,
             writable
         };
-        fetch("https://datastreamer.local:3000/access/client", {
+        fetch(`${config.uri}/access/client`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)

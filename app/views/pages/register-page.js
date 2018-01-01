@@ -7,6 +7,7 @@ import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import FormSubmitError from "../components/form-submit-error";
+import config from "../../../config.json";
 
 class Register extends React.Component {
     constructor(props) {
@@ -103,7 +104,7 @@ class Register extends React.Component {
             password: this.state.password,
             clientConnectPassword: this.state.clientConnectPassword
         };
-        fetch("https://datastreamer.local:3000/provider/register", {
+        fetch(`${config.uri}/provider/register`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)

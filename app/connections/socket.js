@@ -1,8 +1,9 @@
 import io from "socket.io-client";
+import config from "../../config.json";
 
 function Socket(connector, token, pageAccessor) {
     this.connector = connector;
-    this.socket = io("https://datastreamer.local:3000", {
+    this.socket = io(config.uri, {
         query: `token=${token}`,
         secure: true
     });
