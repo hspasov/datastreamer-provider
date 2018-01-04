@@ -6,9 +6,8 @@ module.exports = {
         "unit": "./app/units/init.js"
     },
     output: {
-        path: path.resolve(__dirname, "./public/js"),
-        filename: "[name].js",
-        publicPath: "/public/js"
+        path: path.join(__dirname, "public/js"),
+        filename: "[name].js"
     },
     module: {
         rules: [
@@ -28,17 +27,10 @@ module.exports = {
             },
             {
                 test: /\.svg$|\.woff$|\.woff2$|\.[ot]tf$|\.eot$|\.png$/,
-                loader: "url-loader"
+                use: ["url-loader"]
             }
         ]
     },
-    node: {
-        __dirname: false,
-        __filename: false
-    },
-    plugins: [
-
-    ],
     watch: true,
     watchOptions: {
         ignored: /node_modules/

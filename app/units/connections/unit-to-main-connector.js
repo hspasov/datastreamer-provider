@@ -23,8 +23,6 @@ class UnitToMainConnector {
 
         ipcRenderer.send("inside unit");
         console.log("fired inside unit");
-
-        this.resetConnection = this.resetConnection.bind(this);
     }
 
     requestP2PConnection() {

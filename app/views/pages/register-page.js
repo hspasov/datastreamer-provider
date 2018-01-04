@@ -22,13 +22,6 @@ class Register extends React.Component {
             hasFormErrors: false,
             formErrors: []
         }
-
-        this.handleUsernameChange = this.handleUsernameChange.bind(this);
-        this.handlePasswordChange = this.handlePasswordChange.bind(this);
-        this.handleConfirmPasswordChange = this.handleConfirmPasswordChange.bind(this);
-        this.handleClientConnectPasswordChange = this.handleClientConnectPasswordChange.bind(this);
-        this.handleConfirmClientConnectPasswordChange = this.handleConfirmClientConnectPasswordChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleUsernameChange(event) {
@@ -177,7 +170,7 @@ class Register extends React.Component {
                                     iconPosition="left"
                                     placeholder="Username"
                                     required
-                                    onChange={this.handleUsernameChange}
+                                    onChange={event => this.handleUsernameChange(event)}
                                 />
                                 <Form.Input
                                     fluid
@@ -186,7 +179,7 @@ class Register extends React.Component {
                                     placeholder="Password"
                                     type="password"
                                     required
-                                    onChange={this.handlePasswordChange}
+                                    onChange={event => this.handlePasswordChange(event)}
                                 />
                                 <Form.Input
                                     fluid
@@ -195,7 +188,7 @@ class Register extends React.Component {
                                     placeholder="Confirm password"
                                     type="password"
                                     required
-                                    onChange={this.handleConfirmPasswordChange}
+                                    onChange={event => this.handleConfirmPasswordChange(event)}
                                 />
                                 <Form.Input
                                     fluid
@@ -204,7 +197,7 @@ class Register extends React.Component {
                                     placeholder="Client connect password"
                                     type="password"
                                     required
-                                    onChange={this.handleClientConnectPasswordChange}
+                                    onChange={event => this.handleClientConnectPasswordChange(event)}
                                 />
                                 <Form.Input
                                     fluid
@@ -213,9 +206,9 @@ class Register extends React.Component {
                                     placeholder="Confirm client connect password"
                                     type="password"
                                     required
-                                    onChange={this.handleConfirmClientConnectPasswordChange}
+                                    onChange={event => this.handleConfirmClientConnectPasswordChange(event)}
                                 />
-                                <Button color="black" fluid size="large" onClick={this.handleSubmit}>Register</Button>
+                                <Button color="black" fluid size="large" onClick={() => this.handleSubmit()}>Register</Button>
                                 <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
                             </Segment>
                         </Form>

@@ -7,9 +7,6 @@ class MainToUnitConnector {
         this.socket = new Socket(this, token, pageAccessor).socket;
 
         this.selectedMainDirectory = "";
-        this.initializeScan = this.initializeScan.bind(this);
-        this.connectToClients = this.connectToClients.bind(this);
-        this.deleteAll = this.deleteAll.bind(this);
 
         ipcRenderer.on("send description", (event, clientSocketId, description) => {
             this.socket.emit("description", description, clientSocketId);

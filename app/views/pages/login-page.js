@@ -20,10 +20,6 @@ class Login extends React.Component {
             hasFormErrors: false,
             formErrors: []
         }
-
-        this.handleUsernameChange = this.handleUsernameChange.bind(this);
-        this.handlePasswordChange = this.handlePasswordChange.bind(this);
-        this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     handleUsernameChange(event) {
@@ -130,7 +126,7 @@ class Login extends React.Component {
                                     iconPosition="left"
                                     placeholder="Username"
                                     required
-                                    onChange={this.handleUsernameChange}
+                                    onChange={event => this.handleUsernameChange(event)}
                                 />
                                 <Form.Input
                                     fluid
@@ -139,9 +135,9 @@ class Login extends React.Component {
                                     placeholder="Password"
                                     type="password"
                                     required
-                                    onChange={this.handlePasswordChange}
+                                    onChange={event => this.handlePasswordChange(event)}
                                 />
-                                <Button color="black" fluid size="large" onClick={this.handleSubmit}>Login</Button>
+                                <Button color="black" fluid size="large" onClick={event => this.handleSubmit(event)}>Login</Button>
                                 <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
                             </Segment>
                         </Form>

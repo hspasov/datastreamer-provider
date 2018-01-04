@@ -31,13 +31,7 @@ class DataWatcher extends React.Component {
     constructor(props) {
         super(props);
 
-        this.handleSelectMainDirectory = this.handleSelectMainDirectory.bind(this);
-        this.initializeScan = this.initializeScan.bind(this);
-        this.statusHandler = this.statusHandler.bind(this);
         this.pageAccessor = this.pageAccessor.bind(this);
-        this.handleToggleAccessRule = this.handleToggleAccessRule.bind(this);
-        this.handleRemoveBan = this.handleRemoveBan.bind(this);
-        this.closeClientConnection = this.closeClientConnection.bind(this);
         this.connector = new MainToUnitConnector(this.props.provider.token, this.pageAccessor);
     }
 
@@ -242,8 +236,8 @@ class DataWatcher extends React.Component {
         const settings = <div>
             <Header>This provider:</Header>
             <p>{this.props.provider.username}</p>
-            <input ref={node => this._addDirectory(node)} type="file" onChange={this.handleSelectMainDirectory} />
-            <Button onClick={this.initializeScan}>Scan Directory</Button>
+            <input ref={node => this._addDirectory(node)} type="file" onChange={event => this.handleSelectMainDirectory(event)} />
+            <Button onClick={() => this.initializeScan()}>Scan Directory</Button>
             <Header>Main directory path:</Header>
             <p>{this.props.settings.mainDirectory}</p>
             <Header>Access rules:</Header>

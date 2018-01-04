@@ -11,8 +11,6 @@ require("electron-reload")(__dirname, {
     electron: path.join(__dirname, "node_modules", ".bin", "electron")
 });
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 const providerUnits = new Map();
 
@@ -21,8 +19,7 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools();
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "index.html"),
-        protocol: "file:",
-        slashes: true
+        protocol: "file:"
     }));
 
     mainWindow.on("closed", () => {
