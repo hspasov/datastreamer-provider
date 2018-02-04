@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { Button, Header, Message } from "semantic-ui-react";
-import AccessRulesComponent from "./access-rules-component.jsx";
+import AccessTogglesComponent from "./access-toggles-component.jsx";
 
 class Settings extends React.Component {
     render() {
@@ -18,7 +18,7 @@ class Settings extends React.Component {
             <Header>Main directory path:</Header>
             <p>{this.props.settings.mainDirectory}</p>
             <Header>Access rules:</Header>
-            <AccessRulesComponent
+            <AccessTogglesComponent
                 readable={this.props.settings.readable}
                 writable={this.props.settings.writable}
                 toggle={accessRule => this.props.toggleAccessRule(accessRule)}

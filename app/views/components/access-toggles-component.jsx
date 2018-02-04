@@ -1,7 +1,7 @@
 import React from "react";
 import { Checkbox, Label } from "semantic-ui-react";
 
-class AccessRulesComponent extends React.Component {
+class AccessTogglesComponent extends React.Component {
     render() {
         return <div>
             <div>
@@ -16,4 +16,4 @@ class AccessRulesComponent extends React.Component {
     }
 }
 
-export default AccessRulesComponent;
+export default AccessTogglesComponent;

@@ -27,19 +27,15 @@ function scanDirectory() {
             });
         })
         .on("addDir", (path, stats) => {
-            magic.detectFile(path).then(mime => {
-                if (isCurrentDirectory) {
-                    isCurrentDirectory = false;
-                } else {
-                    return this.getFileMetadata(path, stats, mime);
-                }
-            }).then(fileMetadata => {
-                if (fileMetadata) {
+            if (isCurrentDirectory) {
+                isCurrentDirectory = false;
+            } else {
+                this.getFileMetadata(path, stats, "inode/directory").then(fileMetadata => {
                     this.sendMessage("addDir", fileMetadata);
-                }
-            }).catch(error => {
-                console.log(error);
-            });
+                }).catch(error => {
+                    console.log(error);
+                });
+            }
         })
         .on("change", (path, stats) => {
             magic.detectFile(path).then(mime => {

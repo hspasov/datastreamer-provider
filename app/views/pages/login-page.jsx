@@ -4,6 +4,7 @@ import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
+import { setClientAccessRules } from "../../store/actions/clientAccessRules";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
 import FormSubmitError from "../components/form-submit-error.jsx";
@@ -64,10 +65,13 @@ class Login extends React.Component {
                 throw response.status;
             }
         }).then(json => {
+            console.log(json);
             this.props.loginProvider(json);
+            this.props.setClientAccessRules(json.clientAccessRules);
             this.props.setDefaultAccess(json.readable, json.writable);
             this.props.history.push("/home");
         }).catch(errorCode => {
+            console.log(errorCode);
             let formErrors;
             switch (errorCode) {
                 case 404:
@@ -147,7 +151,8 @@ class Login extends React.Component {
 
 const LoginPage = withRouter(connect(null, {
     setDefaultAccess,
-    loginProvider
+    loginProvider,
+    setClientAccessRules
 })(Login));
 
 export default LoginPage;

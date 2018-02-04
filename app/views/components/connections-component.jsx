@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Button, Header } from "semantic-ui-react";
-import AccessRulesComponent from "./access-rules-component.jsx";
+import AccessTogglesComponent from "./access-toggles-component.jsx";
 
 class Connections extends React.Component {
     render() {
@@ -12,7 +12,7 @@ class Connections extends React.Component {
                     <div>
                         <Button onClick={() => this.props.closeClientConnection(client)}>Close connection</Button>
                     </div>
-                    <AccessRulesComponent
+                    <AccessTogglesComponent
                         readable={client.readable}
                         writable={client.writable}
                         toggle={accessRule => this.props.toggleAccessRule(client.id, accessRule)}

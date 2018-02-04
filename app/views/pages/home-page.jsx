@@ -8,6 +8,7 @@ import { addClient, setAccess, changeClientDirectory, removeClient } from "../..
 import formurlencoded from "form-urlencoded";
 import ConnectionsComponent from "../components/connections-component.jsx";
 import SettingsComponent from "../components/settings-component.jsx";
+import ClientAccessRulesComponent from "../components/client-access-rules-component.jsx";
 import {
     setMainDirectory,
     toggleDefaultReadable,
@@ -92,10 +93,6 @@ class Home extends React.Component {
         }
     }
 
-    handleRemoveBan(client) {
-        this.props.removeBanned(client.username);
-    }
-
     handleToggleDefaultAccessRule(accessRule) {
         let readable = (accessRule === "readable") ? !this.props.settings.readable : this.props.settings.readable;
         let writable = (accessRule === "writable") ? !this.props.settings.writable : this.props.settings.writable;
@@ -145,8 +142,8 @@ class Home extends React.Component {
             writable = false;
         }
         const formData = {
-            providerToken: this.props.provider.token,
-            connectionToken: client.token,
+            token: this.props.provider.token,
+            username: client.username,
             readable,
             writable
         };
@@ -243,6 +240,10 @@ class Home extends React.Component {
                     closeClientConnection={client => this.closeClientConnection(client)}
                     toggleAccessRule={(clientId, accessRule) => this.handleToggleAccessRule(clientId, accessRule)}
                 />
+            },
+            {
+                menuItem: "Access rules",
+                render: () => <ClientAccessRulesComponent />
             }
         ];
 
