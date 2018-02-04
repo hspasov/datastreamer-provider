@@ -19,7 +19,7 @@ function scanDirectory() {
         })
         .on("add", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                return this.changeScannedFiles(path, stats, mime);
+                return this.getFileMetadata(path, stats, mime);
             }).then(fileMetadata => {
                 this.sendMessage("add", fileMetadata);
             }).catch(error => {
@@ -28,7 +28,7 @@ function scanDirectory() {
         })
         .on("addDir", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                return this.changeScannedFiles(path, stats, mime, isCurrentDirectory);
+                return this.getFileMetadata(path, stats, mime, isCurrentDirectory);
             }).then(fileMetadata => {
                 if (isCurrentDirectory) {
                     isCurrentDirectory = false;
@@ -41,7 +41,7 @@ function scanDirectory() {
         })
         .on("change", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                return this.changeScannedFiles(path, stats, mime);
+                return this.getFileMetadata(path, stats, mime);
             }).then(fileMetadata => {
                 this.sendMessage("change", fileMetadata);
             }).catch(error => {
@@ -49,12 +49,10 @@ function scanDirectory() {
             });
         })
         .on("unlink", path => {
-            this.sendMessage("unlink", this.scannedFiles.get(path));
-            this.removeFromScannedFiles(path);
+            this.sendMessage("unlink", path);
         })
         .on("unlinkDir", path => {
-            this.sendMessage("unlinkDir", this.scannedFiles.get(path));
-            this.removeFromScannedFiles(path);
+            this.sendMessage("unlinkDir", path);
         })
         .on("error", error => {
             console.log("Error happened", error);

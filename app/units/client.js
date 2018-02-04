@@ -1,5 +1,5 @@
 import sanitize from "sanitize-filename";
-import ConnectorUnit from "./connections/unit-to-main-connector";
+import UnitToMainConnector from "./connections/unit-to-main-connector";
 import getFileType from "./modules/get-file-type";
 import getFilePermissions from "./modules/get-file-permissions";
 import scanDirectory from "./modules/scan-directory";
@@ -16,18 +16,16 @@ const pathModule = window.require("path").posix;
 class Client {
     constructor(unitData, selectedMainDirectory, currentDirectory = ".", watcherOptions = {
         ignored: /[\/\\]\./,
-        persistent: true,
-        usePolling: true,
         alwaysStat: true,
+        usePolling: true,
         depth: 0
     }) {
         this.id = unitData.clientSocketId;
         this.selectedMainDirectory = selectedMainDirectory;
         this.currentDirectory = currentDirectory;
-        this.scannedFiles = new Map();
         this.watcher = null;
         this.watcherOptions = watcherOptions;
-        this.connector = new ConnectorUnit(this);
+        this.connector = new UnitToMainConnector(this);
 
         this.servers = null;
         this.peerConnectionConstraint = null;
@@ -57,7 +55,6 @@ class Client {
             this.watcher.close();
         }
         this.currentDirectory = ".";
-        this.scannedFiles = new Map();
         this.selectedMainDirectory = selectedDirectory;
         if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
             this.scanDirectory();
@@ -173,12 +170,9 @@ class Client {
         }
     }
 
-    sendMessage(action, data) {
+    sendMessage(type, payload) {
         try {
-            this.sendMessageChannel.send(JSON.stringify({
-                action: action,
-                data: data
-            }));
+            this.sendMessageChannel.send(JSON.stringify({ type, payload }));
         } catch (e) {
             if (!this.sendMessageChannel) {
                 console.log("Can't finish task. Connection to provider lost.");
@@ -242,27 +236,6 @@ class Client {
         this.currentDirectory = path.substring(this.selectedMainDirectory.length);
         console.log(this.currentDirectory);
         this.connector.changeDirectory(path);
-        this.scannedFiles = new Map();
-    }
-
-    async changeScannedFiles(path, stats, mime, isCurrentDirectory = false) {
-        if (!path) {
-            throw `Invalid path ${path}`;
-        }
-        try {
-            const fileMetadata = await this.getFileMetadata(path, stats, mime, isCurrentDirectory);
-            this.scannedFiles.set(path, fileMetadata);
-            return fileMetadata;
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    removeFromScannedFiles(path) {
-        if (!path) {
-            throw `Invalid path ${path}`;
-        }
-        this.scannedFiles.delete(path);
     }
 
     async getFileMetadata(path, stats, mime, isCurrentDirectory = false) {

@@ -27,7 +27,7 @@ import {
 import config from "../../../config.json";
 const { dialog } = window.require("electron");
 
-class DataWatcher extends React.Component {
+class Home extends React.Component {
     constructor(props) {
         super(props);
 
@@ -237,7 +237,7 @@ class DataWatcher extends React.Component {
             <Header>This provider:</Header>
             <p>{this.props.provider.username}</p>
             <input ref={node => this._addDirectory(node)} type="file" onChange={event => this.handleSelectMainDirectory(event)} />
-            <Button onClick={() => this.initializeScan()}>Scan Directory</Button>
+            <Button onClick={() => this.initializeScan()}>Scan directory</Button>
             <Header>Main directory path:</Header>
             <p>{this.props.settings.mainDirectory}</p>
             <Header>Access rules:</Header>
@@ -312,7 +312,7 @@ class DataWatcher extends React.Component {
     }
 }
 
-const DataWatcherPage = connect(store => {
+const HomePage = connect(store => {
     return {
         provider: store.provider,
         settings: store.settings,
@@ -340,6 +340,6 @@ const DataWatcherPage = connect(store => {
     disconnect,
     reconnectFail,
     error
-})(DataWatcher);
+})(Home);
 
-export default DataWatcherPage;
+export default HomePage;

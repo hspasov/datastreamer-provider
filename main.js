@@ -12,7 +12,6 @@ require("electron-reload")(__dirname, {
 });
 
 let mainWindow;
-const providerUnits = new Map();
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({ width: 800, height: 600 });

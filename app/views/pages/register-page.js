@@ -110,7 +110,7 @@ class Register extends React.Component {
         }).then(json => {
             this.props.loginProvider(json);
             this.props.setDefaultAccess(json.readable, json.writable);
-            this.props.history.push("/datawatcher");
+            this.props.history.push("/home");
         }).catch(errorCode => {
             let formErrors;
             switch (errorCode) {

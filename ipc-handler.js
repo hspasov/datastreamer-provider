@@ -10,6 +10,10 @@ function ipcHandler(mainWindow) {
             parent: mainWindow,
             show: false
         });
+        browserWindow.once("ready-to-show", () => {
+            browserWindow.show();
+            browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
+        });
         socketIdUnitMap.set(unitData.clientSocketId, {
             browserWindow,
             token: unitData.token,
@@ -22,10 +26,6 @@ function ipcHandler(mainWindow) {
             protocol: "file:",
             slashes: true
         }));
-        unit.browserWindow.once("ready-to-show", () => {
-            unit.browserWindow.show();
-            unit.browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
-        });
     });
 
     ipcMain.on("change directory", (event, clientSocketId, directory) => {

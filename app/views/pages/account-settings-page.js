@@ -65,7 +65,7 @@ class AccountSettings extends React.Component {
                 token: json.token,
                 username: this.props.provider.username
             });
-            this.props.history.push("/datawatcher");
+            this.props.history.push("/home");
         }).catch(errorCode => {
             console.log(errorCode);
             let formErrors;
@@ -266,7 +266,7 @@ class AccountSettings extends React.Component {
                         <Header>Datastreamer</Header>
                     </Grid.Column>
                     <Grid.Column textAlign="right">
-                        <Link to="/datawatcher"><Header color="blue"><Icon corner name="arrow left" />Go back</Header></Link>
+                        <Link to="/home"><Header color="blue"><Icon corner name="arrow left" />Go back</Header></Link>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row centered>
