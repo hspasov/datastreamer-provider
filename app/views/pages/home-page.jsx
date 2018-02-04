@@ -1,18 +1,19 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Button, Checkbox, Grid, Header, Label, Message, Tab } from "semantic-ui-react";
+import { Grid, Header, Tab } from "semantic-ui-react";
 import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
 import { addClient, setAccess, changeClientDirectory, removeClient } from "../../store/actions/connections";
 import formurlencoded from "form-urlencoded";
+import ConnectionsComponent from "../components/connections-component.jsx";
+import SettingsComponent from "../components/settings-component.jsx";
 import {
     setMainDirectory,
     toggleDefaultReadable,
     setDefaultAccess,
     toggleDefaultWritable
 } from "../../store/actions/settings";
-import { addBanned, removeBanned } from "../../store/actions/banned";
 import {
     connectSuccess,
     connectError,
@@ -51,12 +52,6 @@ class Home extends React.Component {
 
     initializeScan() {
         this.connector.initializeScan();
-    }
-
-    _addDirectory(node) {
-        if (node) {
-            node.webkitdirectory = true;
-        }
     }
 
     selectDirectory() {
@@ -233,68 +228,22 @@ class Home extends React.Component {
             return <Redirect to="/login"></Redirect>;
         }
 
-        const settings = <div>
-            <Header>This provider:</Header>
-            <p>{this.props.provider.username}</p>
-            <input ref={node => this._addDirectory(node)} type="file" onChange={event => this.handleSelectMainDirectory(event)} />
-            <Button onClick={() => this.initializeScan()}>Scan directory</Button>
-            <Header>Main directory path:</Header>
-            <p>{this.props.settings.mainDirectory}</p>
-            <Header>Access rules:</Header>
-            <div>
-                <Label>Readable:</Label>
-                <Checkbox name="readable" toggle checked={this.props.settings.readable} onClick={() => this.handleToggleDefaultAccessRule("readable")} />
-            </div>
-            {this.props.settings.readable && <div>
-                <Label>Writable:</Label>
-                <Checkbox name="writable" toggle checked={this.props.settings.writable} onClick={() => this.handleToggleDefaultAccessRule("writable")} />
-            </div>}
-            <Header>Status:</Header>
-            <Message color={(this.props.status.isError)? "red" : "olive"} compact>
-                <Message.Header>{(this.props.status.connection) ? "Online" : "Offline"}</Message.Header>
-                <p>{this.props.status.message}</p>
-            </Message>
-            <Link to="/account-settings">Account settings</Link>
-        </div>;
-
-        const banned = <div>
-            {this.props.banned.clients.map((client, i) => {
-                return <div key={client.username}>
-                    <p>{client.username}</p>
-                    <Label>Banned:</Label>
-                    <Checkbox toggle checked={client.readable} onClick={() => this.handleRemoveBan(client)} />
-                </div>;
-            })}
-        </div>;
-
-        const clients = <div>
-            {this.props.connections.clients.map((client, i) => {
-                return <div key = { client.id }>
-                    <p>{client.username}</p>
-                    <p>{client.token}</p>
-                    <div>
-                        <Button onClick={() => this.closeClientConnection(client)}>Close connection</Button>
-                    </div>
-                    <div>
-                        <Header>Readable:</Header>
-                        <Checkbox name="readable" toggle checked={client.readable} onClick={() => this.handleToggleAccessRule(client.id, "readable")} />
-                    </div>
-                    {client.readable && <div>
-                        <Header>Writable:</Header>
-                        <Checkbox name="writable" toggle checked={client.writable} onClick={() => this.handleToggleAccessRule(client.id, "writable")} />
-                    </div>}
-                    <div>
-                        <Header>Current directory:</Header>
-                        <p>{client.directory}</p>
-                    </div>
-                </div>;
-            })}
-            {banned}
-        </div>;
-
         const panes = [
-            { menuItem: "Settings", render: () => settings },
-            { menuItem: "Clients", render: () => clients }
+            {
+                menuItem: "Settings",
+                render: () => <SettingsComponent
+                    handleSelectMainDirectory={event => this.handleSelectMainDirectory(event)}
+                    initializeScan={() => this.initializeScan()}
+                    toggleAccessRule={accessRule => this.handleToggleDefaultAccessRule(accessRule)}
+                />
+            },
+            {
+                menuItem: "Connections",
+                render: () => <ConnectionsComponent
+                    closeClientConnection={client => this.closeClientConnection(client)}
+                    toggleAccessRule={(clientId, accessRule) => this.handleToggleAccessRule(clientId, accessRule)}
+                />
+            }
         ];
 
         return <Grid style={{ height: "100%" }} verticalAlign="top">
@@ -329,8 +278,6 @@ const HomePage = connect(store => {
     toggleDefaultReadable,
     setDefaultAccess,
     toggleDefaultWritable,
-    addBanned,
-    removeBanned,
     connectSuccess,
     connectError,
     invalidToken,

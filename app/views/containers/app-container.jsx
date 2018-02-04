@@ -1,9 +1,9 @@
 import React from "react";
 import { Route, Switch, withRouter } from "react-router-dom";
-import HomePage from "../pages/home-page";
-import LoginPage from "../pages/login-page";
-import RegisterPage from "../pages/register-page";
-import AccountSettingsPage from "../pages/account-settings-page";
+import HomePage from "../pages/home-page.jsx";
+import LoginPage from "../pages/login-page.jsx";
+import RegisterPage from "../pages/register-page.jsx";
+import AccountSettingsPage from "../pages/account-settings-page.jsx";
 
 class App extends React.Component {
     constructor(props) {

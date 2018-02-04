@@ -5,7 +5,7 @@ import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Segment } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import { loginProvider, logoutProvider } from "../../store/actions/provider";
-import FormSubmitError from "../components/form-submit-error";
+import FormSubmitError from "../components/form-submit-error.jsx";
 import config from "../../../config.json";
 
 class AccountSettings extends React.Component {

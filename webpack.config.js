@@ -2,7 +2,7 @@ const path = require("path").posix;
 
 module.exports = {
     entry: {
-        "bundle": "./app/app.js",
+        "bundle": "./app/app.jsx",
         "unit": "./app/units/init.js"
     },
     output: {
@@ -12,7 +12,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.js$|\.jsx$/,
                 use: [{
                     loader: "babel-loader",
                     options: {

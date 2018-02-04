@@ -1,24 +1,21 @@
 import React from "react";
 import { connect } from "react-redux";
-import { Helmet } from "react-helmet";
 import { Link, withRouter } from "react-router-dom";
 import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
-import FormSubmitError from "../components/form-submit-error";
+import { Helmet } from "react-helmet";
+import FormSubmitError from "../components/form-submit-error.jsx";
 import config from "../../../config.json";
 
-class Register extends React.Component {
+class Login extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             username: "",
             password: "",
-            confirmPassword: "",
-            clientConnectPassword: "",
-            confirmClientConnectPassword: "",
             hasFormErrors: false,
             formErrors: []
         }
@@ -28,7 +25,7 @@ class Register extends React.Component {
         event.preventDefault();
         this.setState({
             username: event.target.value
-        });
+        })
     }
 
     handlePasswordChange(event) {
@@ -38,35 +35,8 @@ class Register extends React.Component {
         });
     }
 
-    handleConfirmPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            confirmPassword: event.target.value
-        });
-    }
-
-    handleClientConnectPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            clientConnectPassword: event.target.value
-        });
-    }
-
-    handleConfirmClientConnectPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            confirmClientConnectPassword: event.target.value
-        });
-    }
-
     handleSubmit() {
-        if (!(
-            this.state.username &&
-            this.state.password &&
-            this.state.confirmPassword &&
-            this.state.clientConnectPassword &&
-            this.state.confirmClientConnectPassword)) {
-
+        if (!(this.state.username && this.state.password)) {
             this.setState({
                 hasFormErrors: true,
                 formErrors: ["empty"]
@@ -74,35 +44,21 @@ class Register extends React.Component {
             return;
         }
 
-        if (this.state.password != this.state.confirmPassword) {
-            this.setState({
-                hasFormErrors: true,
-                formErrors: ["match"]
-            });
-            return;
-        }
-
-        if (this.state.clientConnectPassword != this.state.confirmClientConnectPassword) {
-            this.setState({
-                hasFormErrors: true,
-                formErrors: ["match"]
-            });
-            return;
-        }
-
-// todo: check if clientConnectPassword and password are same and give error if they are
+        this.setState({
+            hasFormErrors: false
+        });
 
         let formData = {
             username: this.state.username,
-            password: this.state.password,
-            clientConnectPassword: this.state.clientConnectPassword
+            password: this.state.password
         };
-        fetch(`${config.uri}/provider/register`, {
+
+        fetch(`${config.uri}/provider/login`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
         }).then(response => {
-            if (response.status == 201) {
+            if (response.status === 200) {
                 return response.json();
             } else {
                 throw response.status;
@@ -114,11 +70,8 @@ class Register extends React.Component {
         }).catch(errorCode => {
             let formErrors;
             switch (errorCode) {
-                case 400:
-                    formErrors = ["format"];
-                    break;
-                case 412:
-                    formErrors = ["exists"];
+                case 404:
+                    formErrors = ["verification"];
                     break;
                 case 500:
                     formErrors = ["error"];
@@ -153,14 +106,14 @@ class Register extends React.Component {
                         <Header>Datastreamer</Header>
                     </Grid.Column>
                     <Grid.Column textAlign="right">
-                        <Link to="/login"><Header color="blue"><Icon name="arrow left"/>Go back</Header></Link>
+                        <Link to="/register"><Header color="blue"><Icon corner name="plus" />Create provider</Header></Link>
                     </Grid.Column>
                 </Grid.Row>
 
                 <Grid.Row centered>
                     <Grid.Column style={{ maxWidth: 450 }} textAlign="center">
                         <Header as="h2" color="black" textAlign="center">
-                            Create new provider
+                            Log-in to your account
                         </Header>
                         <Form size="massive">
                             <Segment>
@@ -181,34 +134,7 @@ class Register extends React.Component {
                                     required
                                     onChange={event => this.handlePasswordChange(event)}
                                 />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Confirm password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleConfirmPasswordChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Client connect password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleClientConnectPasswordChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Confirm client connect password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleConfirmClientConnectPasswordChange(event)}
-                                />
-                                <Button color="black" fluid size="large" onClick={() => this.handleSubmit()}>Register</Button>
+                                <Button color="black" fluid size="large" onClick={event => this.handleSubmit(event)}>Login</Button>
                                 <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
                             </Segment>
                         </Form>
@@ -219,9 +145,9 @@ class Register extends React.Component {
     }
 }
 
-const RegisterPage = withRouter(connect(null, {
-    loginProvider,
-    setDefaultAccess
-})(Register));
+const LoginPage = withRouter(connect(null, {
+    setDefaultAccess,
+    loginProvider
+})(Login));
 
-export default RegisterPage;
+export default LoginPage;
