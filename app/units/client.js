@@ -143,7 +143,7 @@ class Client {
     sendFile(filePath) {
         console.log(filePath);
         try {
-            const path = this.resolvePath(filePath);
+            const path = this.getAbsolutePath(filePath);
             console.log(path);
             this.readStream = fs.createReadStream(path);
             this.sendFileChannel.onbufferedamountlow = () => {
@@ -183,7 +183,7 @@ class Client {
     }
 
     copyFile(filePath) {
-        const source = this.resolvePath(filePath);
+        const source = this.getAbsolutePath(filePath);
         const basename = sanitize(pathModule.basename(filePath));
         if (!basename) {
             console.log("Invalid path");
@@ -201,7 +201,7 @@ class Client {
     }
 
     moveFile(filePath) {
-        const source = this.resolvePath(filePath);
+        const source = this.getAbsolutePath(filePath);
         const basename = sanitize(pathModule.basename(filePath));
         if (!basename) {
             console.log("Invalid path");
@@ -216,7 +216,7 @@ class Client {
     }
 
     deleteFile(filePath) {
-        const source = this.resolvePath(filePath);
+        const source = this.getAbsolutePath(filePath);
         trash([source], { glob: false }).then(() => {
             console.log("deleted");
         }).catch(error => {
@@ -225,7 +225,7 @@ class Client {
     }
 
     changeDirectory(selectedDirectory) {
-        const path = this.resolvePath(selectedDirectory);
+        const path = this.getAbsolutePath(selectedDirectory);
         if (!selectedDirectory) {
             throw `Invalid directory ${selectedDirectory}`;
         }
@@ -238,15 +238,13 @@ class Client {
         this.connector.changeDirectory(path);
     }
 
-    async getFileMetadata(path, stats, mime, isCurrentDirectory = false) {
+    async getFileMetadata(path, stats, mime) {
         if (!path) {
             throw `Invalid path, ${path}`;
         }
-        const fileName = pathModule.basename(path);
         return {
-            name: fileName,
-            path: isCurrentDirectory ?
-                this.currentDirectory : pathModule.join(this.currentDirectory, fileName),
+            name: pathModule.basename(path),
+            path: this.getRelativePath(path),
             type: getFileType(path, stats),
             access: await getFilePermissions(path),
             size: stats.size,
@@ -254,9 +252,13 @@ class Client {
         };
     }
 
-    resolvePath(path) {
+    getAbsolutePath(path) {
         const splitAndSanitized = path.split(pathModule.sep).map(segment => sanitize(segment));
         return pathModule.join(this.selectedMainDirectory, ...splitAndSanitized);
+    }
+
+    getRelativePath(path) {
+        return pathModule.join(this.currentDirectory, pathModule.basename(path));
     }
 
     deleteP2PConnection(error=null) {

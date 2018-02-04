@@ -28,11 +28,13 @@ function scanDirectory() {
         })
         .on("addDir", (path, stats) => {
             magic.detectFile(path).then(mime => {
-                return this.getFileMetadata(path, stats, mime, isCurrentDirectory);
-            }).then(fileMetadata => {
                 if (isCurrentDirectory) {
                     isCurrentDirectory = false;
                 } else {
+                    return this.getFileMetadata(path, stats, mime);
+                }
+            }).then(fileMetadata => {
+                if (fileMetadata) {
                     this.sendMessage("addDir", fileMetadata);
                 }
             }).catch(error => {
@@ -49,10 +51,10 @@ function scanDirectory() {
             });
         })
         .on("unlink", path => {
-            this.sendMessage("unlink", path);
+            this.sendMessage("unlink", this.getRelativePath(path));
         })
         .on("unlinkDir", path => {
-            this.sendMessage("unlinkDir", path);
+            this.sendMessage("unlinkDir", this.getRelativePath(path));
         })
         .on("error", error => {
             console.log("Error happened", error);
