@@ -26,6 +26,10 @@ import {
     reconnectFail,
     error
 } from "../../store/actions/status";
+import {
+    setClientAccessRule,
+    removeClientAccessRule
+} from "../../store/actions/clientAccessRules";
 import config from "../../../config.json";
 const { dialog } = window.require("electron");
 
@@ -134,20 +138,27 @@ class Home extends React.Component {
         });
     }
 
-    handleToggleAccessRule(clientId, accessRule) {
-        const client = this.props.connections.clients.find(c => c.id === clientId);
-        let readable = (accessRule === "readable")? !client.readable : client.readable;
-        let writable = (accessRule === "writable") ? !client.writable : client.writable;
+    handleToggleAccessRule(username, accessRule) {
+        let clientAccessRule = this.props.clientAccessRules.rules.find(c => c.username === username);
+        if (!clientAccessRule) {
+            clientAccessRule = {
+                username,
+                readable: false,
+                writable: false
+            };
+        }
+        let readable = (accessRule === "readable") ? !clientAccessRule.readable : clientAccessRule.readable;
+        let writable = (accessRule === "writable") ? !clientAccessRule.writable : clientAccessRule.writable;
         if (!readable) {
             writable = false;
         }
         const formData = {
             token: this.props.provider.token,
-            username: client.username,
+            username,
             readable,
             writable
         };
-        fetch(`${config.uri}/access/client`, {
+        fetch(`${config.uri}/access/client?action=create`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded", },
             body: formurlencoded(formData)
@@ -158,7 +169,15 @@ class Home extends React.Component {
                 throw response;
             }
         }).then(json => {
-            this.props.setAccess(clientId, json.readable, json.writable);
+            this.props.setClientAccessRule({
+                username,
+                readable: json.readable,
+                writable: json.writable
+            });
+            const client = this.props.connections.clients.find(c => c.username === username);
+            if (client) {
+                this.props.setAccess(client.id, json.readable, json.writable);
+            }
         }).catch(errorCode => {
             switch (errorCode.status) {
                 case 400:
@@ -168,13 +187,38 @@ class Home extends React.Component {
                     errorCode.json().then(response => {
                         if (response.reason === "providerToken") {
                             this.statusHandler("invalid_token");
-                        } else if (response.reason === "connectionToken") {
-                            this.statusHandler("invalid_client_token");
                         } else {
                             this.statusHandler("error");
                         }
                     });
                     break;
+                case 500:
+                    this.statusHandler("error");
+                    break;
+                default:
+                    this.statusHandler("connect_error");
+            }
+        });
+    }
+
+    removeAccessRule(username) {
+        const formData = {
+            token: this.props.provider.token,
+            username
+        };
+
+        fetch(`${config.uri}/access/client?action=delete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            if (response.status === 200) {
+                this.props.removeClientAccessRule(username);
+            } else {
+                throw response;
+            }
+        }).catch(errorCode => {
+            switch (errorCode.status) {
                 case 500:
                     this.statusHandler("error");
                     break;
@@ -238,12 +282,15 @@ class Home extends React.Component {
                 menuItem: "Connections",
                 render: () => <ConnectionsComponent
                     closeClientConnection={client => this.closeClientConnection(client)}
-                    toggleAccessRule={(clientId, accessRule) => this.handleToggleAccessRule(clientId, accessRule)}
+                    toggleAccessRule={(username, accessRule) => this.handleToggleAccessRule(username, accessRule)}
                 />
             },
             {
                 menuItem: "Access rules",
-                render: () => <ClientAccessRulesComponent />
+                render: () => <ClientAccessRulesComponent
+                    toggleAccessRule={(username, accessRule) => this.handleToggleAccessRule(username, accessRule)}
+                    removeAccessRule={username => this.removeAccessRule(username)}
+                />
             }
         ];
 
@@ -268,7 +315,7 @@ const HomePage = connect(store => {
         settings: store.settings,
         connections: store.connections,
         status: store.status,
-        banned: store.banned
+        clientAccessRules: store.clientAccessRules
     };
 }, {
     addClient,
@@ -279,6 +326,8 @@ const HomePage = connect(store => {
     toggleDefaultReadable,
     setDefaultAccess,
     toggleDefaultWritable,
+    setClientAccessRule,
+    removeClientAccessRule,
     connectSuccess,
     connectError,
     invalidToken,

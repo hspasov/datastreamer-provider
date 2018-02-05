@@ -15,7 +15,7 @@ class Connections extends React.Component {
                     <AccessTogglesComponent
                         readable={client.readable}
                         writable={client.writable}
-                        toggle={accessRule => this.props.toggleAccessRule(client.id, accessRule)}
+                        toggle={accessRule => this.props.toggleAccessRule(client.username, accessRule)}
                     />
                     <div>
                         <Header>Current directory:</Header>
