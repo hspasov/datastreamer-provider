@@ -40,11 +40,16 @@ function changeClientDirectory(id, directory) {
     };
 }
 
+function clearConnections() {
+    return { type: "CLEAR_CONNECTIONS" };
+}
+
 export {
     addClient,
     setAccess,
     removeClient,
     toggleReadable,
     toggleWritable,
-    changeClientDirectory
+    changeClientDirectory,
+    clearConnections
 };

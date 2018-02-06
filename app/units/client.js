@@ -5,7 +5,7 @@ import getFilePermissions from "./modules/get-file-permissions";
 import scanDirectory from "./modules/scan-directory";
 import {
     prepareConnectionInitialization,
-    exchangeDescriptions,
+    acceptOffer,
     receiveICECandidate
 } from "./connections/rtc-initialization";
 
@@ -43,7 +43,7 @@ class Client {
         this.bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
 
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
-        this.exchangeDescriptions = exchangeDescriptions.bind(this);
+        this.acceptOffer = acceptOffer.bind(this);
         this.receiveICECandidate = receiveICECandidate.bind(this);
         this.scanDirectory = scanDirectory.bind(this);
 

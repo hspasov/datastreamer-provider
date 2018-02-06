@@ -20,9 +20,14 @@ function toggleDefaultWritable() {
     return { type: "TOGGLE_WRITABLE" };
 }
 
+function clearSettings() {
+    return { type: "CLEAR_SETTINGS" };
+}
+
 export {
     setMainDirectory,
     setDefaultAccess,
     toggleDefaultReadable,
-    toggleDefaultWritable
+    toggleDefaultWritable,
+    clearSettings
 };

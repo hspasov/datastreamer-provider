@@ -21,6 +21,12 @@ const reducer = (state = { mainDirectory: "N/A", readable: false, writable: fals
                 ...state,
                 writable: !state.writable
             };
+        case "CLEAR_SETTINGS":
+            return {
+                mainDirectory: "N/A",
+                readable: false,
+                writable: false
+            };
     }
     return state;
 }

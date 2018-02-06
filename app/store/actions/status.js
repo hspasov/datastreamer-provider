@@ -34,6 +34,10 @@ function error() {
     return { type: "ERROR" };
 }
 
+function clearStatus() {
+    return { type: "CLEAR_STATUS" };
+}
+
 export {
     connectSuccess,
     connectError,
@@ -41,5 +45,6 @@ export {
     connectTimeout,
     disconnect,
     reconnectFail,
-    error
+    error,
+    clearStatus
 };

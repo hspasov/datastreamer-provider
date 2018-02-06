@@ -24,13 +24,17 @@ const reducer = (state = { rules: [] }, action) => {
             } else {
                 return {
                     ...state,
-                    rules: [...rules, action.payload]
+                    rules: [...state.rules, action.payload]
                 };
             }
         case "REMOVE_CLIENT_ACCESS_RULE":
             return {
                 ...state,
                 rules: state.rules.filter(rule => rule.username !== action.payload)
+            };
+        case "CLEAR_CLIENT_ACCESS_RULES":
+            return {
+                rules: []
             };
     }
     return state;

@@ -4,7 +4,14 @@ import { Grid, Header, Tab } from "semantic-ui-react";
 import MainToUnitConnector from "../../connections/main-to-unit-connector";
 import { Redirect } from "react-router";
 import { Link } from "react-router-dom";
-import { addClient, setAccess, changeClientDirectory, removeClient } from "../../store/actions/connections";
+import {
+    addClient,
+    setAccess,
+    changeClientDirectory,
+    removeClient,
+    clearConnections
+} from "../../store/actions/connections";
+import { logoutProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
 import ConnectionsComponent from "../components/connections-component.jsx";
 import SettingsComponent from "../components/settings-component.jsx";
@@ -13,7 +20,8 @@ import {
     setMainDirectory,
     toggleDefaultReadable,
     setDefaultAccess,
-    toggleDefaultWritable
+    toggleDefaultWritable,
+    clearSettings
 } from "../../store/actions/settings";
 import {
     connectSuccess,
@@ -24,11 +32,13 @@ import {
     connectTimeout,
     disconnect,
     reconnectFail,
-    error
+    error,
+    clearStatus
 } from "../../store/actions/status";
 import {
     setClientAccessRule,
-    removeClientAccessRule
+    removeClientAccessRule,
+    clearClientAccessRules
 } from "../../store/actions/clientAccessRules";
 import config from "../../../config.json";
 const { dialog } = window.require("electron");
@@ -62,6 +72,31 @@ class Home extends React.Component {
     selectDirectory() {
         dialog.showOpenDialog(mainWindow, {
             properties: ["openDirectory"]
+        });
+    }
+
+    logout() {
+        const clientTokens = this.props.connections.clients.map(client => client.token);
+        this.props.connections.clients.forEach(client => {
+            this.connector.deleteClient(client.id);
+        });
+        const formData = {
+            providerToken: this.props.provider.token,
+            clientTokens
+        };
+        fetch(`${config.uri}/provider/logout`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded", },
+            body: formurlencoded(formData)
+        }).then(response => {
+            this.props.clearClientAccessRules();
+            this.props.clearConnections();
+            this.props.clearSettings();
+            this.props.clearStatus();
+            this.props.logoutProvider();
+            this.props.history.push("/login");
+        }).catch(error => {
+            console.log(error);
         });
     }
 
@@ -143,8 +178,8 @@ class Home extends React.Component {
         if (!clientAccessRule) {
             clientAccessRule = {
                 username,
-                readable: false,
-                writable: false
+                readable: this.props.settings.readable,
+                writable: this.props.settings.writable
             };
         }
         let readable = (accessRule === "readable") ? !clientAccessRule.readable : clientAccessRule.readable;
@@ -276,6 +311,7 @@ class Home extends React.Component {
                     handleSelectMainDirectory={event => this.handleSelectMainDirectory(event)}
                     initializeScan={() => this.initializeScan()}
                     toggleAccessRule={accessRule => this.handleToggleDefaultAccessRule(accessRule)}
+                    logout={() => this.logout()}
                 />
             },
             {
@@ -323,11 +359,15 @@ const HomePage = connect(store => {
     changeClientDirectory,
     removeClient,
     setMainDirectory,
+    clearConnections,
     toggleDefaultReadable,
     setDefaultAccess,
     toggleDefaultWritable,
+    clearSettings,
     setClientAccessRule,
     removeClientAccessRule,
+    clearClientAccessRules,
+    logoutProvider,
     connectSuccess,
     connectError,
     invalidToken,
@@ -336,7 +376,8 @@ const HomePage = connect(store => {
     connectTimeout,
     disconnect,
     reconnectFail,
-    error
+    error,
+    clearStatus
 })(Home);
 
 export default HomePage;

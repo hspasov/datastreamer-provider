@@ -29,6 +29,7 @@ class Settings extends React.Component {
                 <p>{this.props.status.message}</p>
             </Message>
             <Link to="/account-settings">Account settings</Link>
+            <Button onClick={() => this.props.logout()}>Log out</Button>
         </div>;
     }
 }

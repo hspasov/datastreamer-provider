@@ -61,6 +61,12 @@ const reducer = (state = { isError: false, connection: true, message: "Please se
                 connection: false,
                 message: "Unknown error"
             };
+        case "CLEAR_STATUS":
+            return {
+                isError: false,
+                connection: true,
+                message: "Please select main directory!"
+            };
     }
     return state;
 }

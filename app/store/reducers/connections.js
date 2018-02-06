@@ -67,6 +67,10 @@ const reducer = (state = { clients: [] }, action) => {
                     }
                 })
             };
+        case "CLEAR_CONNECTIONS":
+            return {
+                clients: []
+            };
     }
     return state;
 };

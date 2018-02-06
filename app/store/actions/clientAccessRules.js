@@ -19,8 +19,13 @@ function removeClientAccessRule(clientUsername) {
     };
 }
 
+function clearClientAccessRules() {
+    return { type: "CLEAR_CLIENT_ACCESS_RULES" };
+}
+
 export {
     importRules,
     setClientAccessRule,
-    removeClientAccessRule
+    removeClientAccessRule,
+    clearClientAccessRules
 };
