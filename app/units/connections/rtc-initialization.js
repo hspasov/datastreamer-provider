@@ -46,7 +46,9 @@ function prepareConnectionInitialization(accessRules) {
 
     this.sendMessageChannel.onopen = () => {
         console.log("send message channel is open!");
-        this.scanDirectory();
+        if (this.selectedMainDirectory) {
+            this.scanDirectory();
+        }
     }
     this.connector.requestP2PConnection();
 }

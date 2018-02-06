@@ -51,13 +51,15 @@ class Client {
     }
 
     initializeScan(selectedDirectory) {
-        if (this.watcher) {
-            this.watcher.close();
-        }
-        this.currentDirectory = ".";
-        this.selectedMainDirectory = selectedDirectory;
-        if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
-            this.scanDirectory();
+        if (selectedDirectory) {
+            if (this.watcher) {
+                this.watcher.close();
+            }
+            this.currentDirectory = ".";
+            this.selectedMainDirectory = selectedDirectory;
+            if (this.sendMessageChannel && this.sendMessageChannel.readyState === "open") {
+                this.scanDirectory();
+            }
         }
     }
 
