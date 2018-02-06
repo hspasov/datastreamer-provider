@@ -1,12 +1,13 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Link, withRouter } from "react-router-dom";
-import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+import { Grid, Header, Icon } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
 import { importRules } from "../../store/actions/clientAccessRules";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
+import FormComponent from "../components/form-component.jsx";
 import FormSubmitError from "../components/form-submit-error.jsx";
 import config from "../../../config.json";
 
@@ -22,22 +23,8 @@ class Login extends React.Component {
         }
     }
 
-    handleUsernameChange(event) {
-        event.preventDefault();
-        this.setState({
-            username: event.target.value
-        })
-    }
-
-    handlePasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            password: event.target.value
-        });
-    }
-
-    handleSubmit() {
-        if (!(this.state.username && this.state.password)) {
+    handleSubmit(form) {
+        if (!(form.username && form.password)) {
             this.setState({
                 hasFormErrors: true,
                 formErrors: ["empty"]
@@ -50,8 +37,8 @@ class Login extends React.Component {
         });
 
         let formData = {
-            username: this.state.username,
-            password: this.state.password
+            username: form.username,
+            password: form.password
         };
 
         fetch(`${config.uri}/provider/login`, {
@@ -113,36 +100,31 @@ class Login extends React.Component {
                         <Link to="/register"><Header color="blue"><Icon corner name="plus" />Create provider</Header></Link>
                     </Grid.Column>
                 </Grid.Row>
-
                 <Grid.Row centered>
-                    <Grid.Column style={{ maxWidth: 450 }} textAlign="center">
-                        <Header as="h2" color="black" textAlign="center">
-                            Log-in to your account
-                        </Header>
-                        <Form size="massive">
-                            <Segment>
-                                <Form.Input
-                                    fluid
-                                    icon="user"
-                                    iconPosition="left"
-                                    placeholder="Username"
-                                    required
-                                    onChange={event => this.handleUsernameChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handlePasswordChange(event)}
-                                />
-                                <Button color="black" fluid size="large" onClick={event => this.handleSubmit(event)}>Login</Button>
-                                <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
-                            </Segment>
-                        </Form>
-                    </Grid.Column>
+                    <FormComponent
+                        title="Login to your account"
+                        fields={[
+                            {
+                                label: "username",
+                                icon: "user",
+                                placeholder: "Username",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                label: "password",
+                                icon: "lock",
+                                placeholder: "Password",
+                                type: "password",
+                                required: true
+                            }
+                        ]}
+                        submit={{
+                            label: "Login",
+                            color: "black",
+                            onClick: form => this.handleSubmit(form)
+                        }}
+                    />
                 </Grid.Row>
             </Grid>
         </div>;

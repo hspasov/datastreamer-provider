@@ -2,10 +2,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
 import { Link, withRouter } from "react-router-dom";
-import { Button, Form, Grid, Header, Icon, Message, Segment } from "semantic-ui-react";
+import { Grid, Header, Icon, Message } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
 import { loginProvider } from "../../store/actions/provider";
 import formurlencoded from "form-urlencoded";
+import FormComponent from "../components/form-component.jsx";
 import FormSubmitError from "../components/form-submit-error.jsx";
 import config from "../../../config.json";
 
@@ -24,48 +25,13 @@ class Register extends React.Component {
         }
     }
 
-    handleUsernameChange(event) {
-        event.preventDefault();
-        this.setState({
-            username: event.target.value
-        });
-    }
-
-    handlePasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            password: event.target.value
-        });
-    }
-
-    handleConfirmPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            confirmPassword: event.target.value
-        });
-    }
-
-    handleClientConnectPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            clientConnectPassword: event.target.value
-        });
-    }
-
-    handleConfirmClientConnectPasswordChange(event) {
-        event.preventDefault();
-        this.setState({
-            confirmClientConnectPassword: event.target.value
-        });
-    }
-
-    handleSubmit() {
+    handleSubmit(form) {
         if (!(
-            this.state.username &&
-            this.state.password &&
-            this.state.confirmPassword &&
-            this.state.clientConnectPassword &&
-            this.state.confirmClientConnectPassword)) {
+            form.username &&
+            form.password &&
+            form.confirmPassword &&
+            form.clientConnectPassword &&
+            form.confirmClientConnectPassword)) {
 
             this.setState({
                 hasFormErrors: true,
@@ -74,7 +40,7 @@ class Register extends React.Component {
             return;
         }
 
-        if (this.state.password != this.state.confirmPassword) {
+        if (form.password != form.confirmPassword) {
             this.setState({
                 hasFormErrors: true,
                 formErrors: ["match"]
@@ -82,7 +48,7 @@ class Register extends React.Component {
             return;
         }
 
-        if (this.state.clientConnectPassword != this.state.confirmClientConnectPassword) {
+        if (form.clientConnectPassword != form.confirmClientConnectPassword) {
             this.setState({
                 hasFormErrors: true,
                 formErrors: ["match"]
@@ -93,9 +59,9 @@ class Register extends React.Component {
 // todo: check if clientConnectPassword and password are same and give error if they are
 
         let formData = {
-            username: this.state.username,
-            password: this.state.password,
-            clientConnectPassword: this.state.clientConnectPassword
+            username: form.username,
+            password: form.password,
+            clientConnectPassword: form.clientConnectPassword
         };
         fetch(`${config.uri}/provider/register`, {
             method: "POST",
@@ -156,63 +122,52 @@ class Register extends React.Component {
                         <Link to="/login"><Header color="blue"><Icon name="arrow left"/>Go back</Header></Link>
                     </Grid.Column>
                 </Grid.Row>
-
                 <Grid.Row centered>
-                    <Grid.Column style={{ maxWidth: 450 }} textAlign="center">
-                        <Header as="h2" color="black" textAlign="center">
-                            Create new provider
-                        </Header>
-                        <Form size="massive">
-                            <Segment>
-                                <Form.Input
-                                    fluid
-                                    icon="user"
-                                    iconPosition="left"
-                                    placeholder="Username"
-                                    required
-                                    onChange={event => this.handleUsernameChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handlePasswordChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Confirm password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleConfirmPasswordChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Client connect password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleClientConnectPasswordChange(event)}
-                                />
-                                <Form.Input
-                                    fluid
-                                    icon="lock"
-                                    iconPosition="left"
-                                    placeholder="Confirm client connect password"
-                                    type="password"
-                                    required
-                                    onChange={event => this.handleConfirmClientConnectPasswordChange(event)}
-                                />
-                                <Button color="black" fluid size="large" onClick={() => this.handleSubmit()}>Register</Button>
-                                <FormSubmitError visible={this.state.hasFormErrors} errors={this.state.formErrors} />
-                            </Segment>
-                        </Form>
-                    </Grid.Column>
+                    <FormComponent
+                        title="Create new provider"
+                        fields={[
+                            {
+                                label: "username",
+                                icon: "user",
+                                placeholder: "Username",
+                                type: "text",
+                                required: true
+                            },
+                            {
+                                label: "password",
+                                icon: "lock",
+                                placeholder: "Password",
+                                type: "password",
+                                required: true
+                            },
+                            {
+                                label: "confirmPassword",
+                                icon: "lock",
+                                placeholder: "Confirm password",
+                                type: "password",
+                                required: true
+                            },
+                            {
+                                label: "clientConnectPassword",
+                                icon: "lock",
+                                placeholder: "Client connect password",
+                                type: "password",
+                                required: true
+                            },
+                            {
+                                label: "confirmClientConnectPassword",
+                                icon: "lock",
+                                placeholder: "Confirm client connect password",
+                                type: "password",
+                                required: true
+                            }
+                        ]}
+                        submit={{
+                            label: "Register",
+                            color: "black",
+                            onClick: form => this.handleSubmit(form)
+                        }}
+                    />
                 </Grid.Row>
             </Grid>
         </div>;

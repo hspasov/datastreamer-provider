@@ -51,7 +51,7 @@ function prepareConnectionInitialization(accessRules) {
     this.connector.requestP2PConnection();
 }
 
-function acceptOffer(remoteDesctiption) {
+function respondToOffer(remoteDesctiption) {
     try {
         console.log("setting remote description", remoteDesctiption);
         this.peerConnection.setRemoteDescription(remoteDesctiption);
@@ -91,6 +91,6 @@ function receiveICECandidate(candidate) {
 
 export {
     prepareConnectionInitialization,
-    acceptOffer,
+    respondToOffer,
     receiveICECandidate
 };

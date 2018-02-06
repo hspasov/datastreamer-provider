@@ -9,7 +9,7 @@ class UnitToMainConnector {
 
         ipcRenderer.on("receive description", (event, remoteDescription) => {
             console.log(remoteDescription);
-            this.client.acceptOffer(JSON.parse(remoteDescription));
+            this.client.respondToOffer(JSON.parse(remoteDescription));
         });
 
         ipcRenderer.on("receive ICE candidate", (event, candidate) => {
