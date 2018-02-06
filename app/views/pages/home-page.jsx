@@ -8,6 +8,7 @@ import {
     addClient,
     setAccess,
     changeClientDirectory,
+    changeMainDirectory,
     removeClient,
     clearConnections
 } from "../../store/actions/connections";
@@ -66,7 +67,12 @@ class Home extends React.Component {
     }
 
     initializeScan() {
-        this.connector.initializeScan();
+        if (!this.connector.selectedMainDirectory) {
+            console.log("Please select a directory to scan");
+        } else {
+            this.props.changeMainDirectory(this.connector.selectedMainDirectory);
+            this.connector.initializeScan();
+        }
     }
 
     selectDirectory() {
@@ -357,6 +363,7 @@ const HomePage = connect(store => {
     addClient,
     setAccess,
     changeClientDirectory,
+    changeMainDirectory,
     removeClient,
     setMainDirectory,
     clearConnections,

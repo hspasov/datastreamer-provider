@@ -35,8 +35,15 @@ function toggleWritable(id) {
 
 function changeClientDirectory(id, directory) {
     return {
-        type: "CHANGE_DIRECTORY",
+        type: "CHANGE_CLIENT_DIRECTORY",
         payload: { id, directory }
+    };
+}
+
+function changeMainDirectory(directory) {
+    return {
+        type: "CHANGE_MAIN_DIRECTORY",
+        payload: directory
     };
 }
 
@@ -51,5 +58,6 @@ export {
     toggleReadable,
     toggleWritable,
     changeClientDirectory,
+    changeMainDirectory,
     clearConnections
 };

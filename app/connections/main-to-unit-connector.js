@@ -48,11 +48,7 @@ class MainToUnitConnector {
     }
 
     initializeScan() {
-        if (!this.selectedMainDirectory) {
-            console.log("Please select a directory to scan");
-        } else {
-            ipcRenderer.send("initialize scan", this.selectedMainDirectory);
-        }
+        ipcRenderer.send("initialize scan", this.selectedMainDirectory);
     }
 
     deleteAll() {

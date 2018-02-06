@@ -53,7 +53,7 @@ const reducer = (state = { clients: [] }, action) => {
                     }
                 })
             };
-        case "CHANGE_DIRECTORY":
+        case "CHANGE_CLIENT_DIRECTORY":
             return {
                 ...state,
                 clients: state.clients.map(c => {
@@ -65,6 +65,16 @@ const reducer = (state = { clients: [] }, action) => {
                             directory: action.payload.directory
                         };
                     }
+                })
+            };
+        case "CHANGE_MAIN_DIRECTORY":
+            return {
+                ...state,
+                clients: state.clients.map(c => {
+                    return {
+                        ...c,
+                        directory: action.payload
+                    };
                 })
             };
         case "CLEAR_CONNECTIONS":
