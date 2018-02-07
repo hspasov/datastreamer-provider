@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
+import { Redirect } from "react-router";
 import { Link, withRouter } from "react-router-dom";
 import { Grid, Header, Icon, Message } from "semantic-ui-react";
 import { setDefaultAccess } from "../../store/actions/settings";
@@ -100,6 +101,10 @@ class Register extends React.Component {
     }
 
     render() {
+        if (this.props.provider.token) {
+            return <Redirect to="/home"></Redirect>;
+        }
+
         return <div className="login-form">
             {/*
       Heads up! The styles below are necessary for the correct render of this example.
@@ -174,7 +179,11 @@ class Register extends React.Component {
     }
 }
 
-const RegisterPage = withRouter(connect(null, {
+const RegisterPage = withRouter(connect(store => {
+    return {
+        provider: store.provider
+    };
+}, {
     loginProvider,
     setDefaultAccess
 })(Register));

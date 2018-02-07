@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "react-router";
 import { connect } from "react-redux";
 import { Helmet } from "react-helmet";
 import { Link, withRouter } from "react-router-dom";
@@ -8,8 +9,12 @@ import ChangeAccountPasswordComponent from "../components/change-account-passwor
 import ChangeClientConnectPasswordComponent from "../components/change-client-connect-password-component.jsx";
 import DeleteAccountComponent from "../components/delete-account-component.jsx";
 
-class AccountSettingsPage extends React.Component {
+class AccountSettings extends React.Component {
     render() {
+        if (!this.props.provider.token) {
+            return <Redirect to="/login"></Redirect>;
+        }
+
         const panes = [
             {
                 menuItem: "Change account password",
@@ -51,5 +56,11 @@ class AccountSettingsPage extends React.Component {
         </div>;
     }
 }
+
+const AccountSettingsPage = connect(store => {
+    return {
+        provider: store.provider
+    };
+})(AccountSettings);
 
 export default AccountSettingsPage;

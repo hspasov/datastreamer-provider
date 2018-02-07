@@ -1,4 +1,5 @@
 import React from "react";
+import { Redirect } from "react-router";
 import { connect } from "react-redux";
 import { Link, withRouter } from "react-router-dom";
 import { Grid, Header, Icon } from "semantic-ui-react";
@@ -78,6 +79,10 @@ class Login extends React.Component {
     }
 
     render() {
+        if (this.props.provider.token) {
+            return <Redirect to="/home"></Redirect>;
+        }
+
         return <div className="login-form">
             {/*
       Heads up! The styles below are necessary for the correct render of this example.
@@ -131,7 +136,11 @@ class Login extends React.Component {
     }
 }
 
-const LoginPage = withRouter(connect(null, {
+const LoginPage = withRouter(connect(store => {
+    return {
+        provider: store.provider
+    };
+}, {
     setDefaultAccess,
     loginProvider,
     importRules
