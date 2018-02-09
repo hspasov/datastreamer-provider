@@ -9,7 +9,6 @@ import { importRules } from "../../store/actions/clientAccessRules";
 import formurlencoded from "form-urlencoded";
 import { Helmet } from "react-helmet";
 import FormComponent from "../components/form-component.jsx";
-import FormSubmitError from "../components/form-submit-error.jsx";
 import config from "../../../config.json";
 
 class Login extends React.Component {
@@ -50,30 +49,17 @@ class Login extends React.Component {
             if (response.status === 200) {
                 return response.json();
             } else {
-                throw response.status;
+                throw response;
             }
         }).then(json => {
-            console.log(json);
             this.props.loginProvider(json);
             this.props.importRules(json.clientAccessRules);
             this.props.setDefaultAccess(json.readable, json.writable);
             this.props.history.push("/home");
-        }).catch(errorCode => {
-            console.log(errorCode);
-            let formErrors;
-            switch (errorCode) {
-                case 404:
-                    formErrors = ["verification"];
-                    break;
-                case 500:
-                    formErrors = ["error"];
-                    break;
-                default:
-                    formErrors = ["connect"];
-            }
+        }).catch(error => {
             this.setState({
                 hasFormErrors: true,
-                formErrors
+                formErrors: [error.status]
             });
         });
     }
@@ -84,25 +70,26 @@ class Login extends React.Component {
         }
 
         return <div className="login-form">
-            {/*
-      Heads up! The styles below are necessary for the correct render of this example.
-      You can do same with CSS, the main idea is that all the elements up to the `Grid`
-      below must have a height of 100%.
-    */}
-            <Helmet><style>{`
-      body > div,
-      body > div > div,
-      body > div > div > div.login-form {
-        height: 100%;
-      }
-    `}</style></Helmet>
+            <Helmet>
+                <style>{`
+                    body > div,
+                    body > div > div,
+                    body > div > div > div.login-form {
+                        height: 100%;
+                    }
+                `}</style>
+            </Helmet>
             <Grid style={{ height: "100%" }} verticalAlign="top">
                 <Grid.Row columns={2}>
                     <Grid.Column textAlign="left">
                         <Header>Datastreamer</Header>
                     </Grid.Column>
                     <Grid.Column textAlign="right">
-                        <Link to="/register"><Header color="blue"><Icon corner name="plus" />Create provider</Header></Link>
+                        <Link to="/register">
+                            <Header color="blue">
+                                <Icon corner name="plus" />Create provider
+                            </Header>
+                        </Link>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row centered>
@@ -114,20 +101,26 @@ class Login extends React.Component {
                                 icon: "user",
                                 placeholder: "Username",
                                 type: "text",
-                                required: true
+                                required: true,
+                                autocomplete: "username"
                             },
                             {
                                 label: "password",
                                 icon: "lock",
                                 placeholder: "Password",
                                 type: "password",
-                                required: true
+                                required: true,
+                                autocomplete: "current-password"
                             }
                         ]}
                         submit={{
                             label: "Login",
                             color: "black",
                             onClick: form => this.handleSubmit(form)
+                        }}
+                        error={{
+                            hasFormErrors: this.state.hasFormErrors,
+                            formErrors: this.state.formErrors
                         }}
                     />
                 </Grid.Row>

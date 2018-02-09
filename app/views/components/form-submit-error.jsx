@@ -7,12 +7,14 @@ class FormSubmitError extends React.Component {
 
         this.errorTypes = {
             "empty": "One or more fields were left empty",
-            "format": "Password must be between 8 and 100 characters long, must have uppercase, lowercase letters and digits.",
-            "verification": "Invalid username or password",
+            400: "Password must be between 8 and 100 characters long, must have uppercase, lowercase letters and digits.",
+            401: "Session expired, please authenticate again",
+            404: "Invalid username or password",
             "match": "Passwords don't match",
-            "exists": "Username already taken",
+            "difference": "Account password and client connect password must be different",
+            412: "Username already taken",
             "connect": "Can't connect to server",
-            "error": "Unknown error"
+            500: "Unknown error"
         };
     }
 

@@ -55,28 +55,10 @@ class ChangeClientConnectPassword extends React.Component {
                 token: json.token,
                 username: this.props.provider.username
             });
-        }).catch(errorCode => {
-            console.log(errorCode);
-            let formErrors;
-            switch (errorCode) {
-                case 400:
-                    formErrors = ["format"];
-                    break;
-                case 401:
-                    formErrors = ["token"];
-                    break;
-                case 404:
-                    formErrors = ["verification"];
-                    break;
-                case 500:
-                    formErrors = ["error"];
-                    break;
-                default:
-                    formErrors = ["connect"];
-            }
+        }).catch(error => {
             this.setState({
                 hasFormErrors: true,
-                formErrors
+                formErrors: [error.status]
             });
         });
     }
@@ -90,27 +72,34 @@ class ChangeClientConnectPassword extends React.Component {
                     icon: "lock",
                     placeholder: "Account password",
                     type: "password",
-                    required: true
+                    required: true,
+                    autocomplete: "off"
                 },
                 {
                     label: "newClientConnectPassword",
                     icon: "lock",
                     placeholder: "New client connect password",
                     type: "password",
-                    required: true
+                    required: true,
+                    autocomplete: "off"
                 },
                 {
                     label: "confirmNewClientConnectPassword",
                     icon: "lock",
                     placeholder: "Confirm new client connect password",
                     type: "password",
-                    required: true
+                    required: true,
+                    autocomplete: "off"
                 }
             ]}
             submit={{
                 label: "Submit",
                 color: "black",
                 onClick: form => this.handleSubmit(form)
+            }}
+            error={{
+                hasFormErrors: this.state.hasFormErrors,
+                formErrors: this.state.formErrors
             }}
         />;
     }

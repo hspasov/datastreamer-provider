@@ -119,14 +119,10 @@ class Home extends React.Component {
                 this.connector.deleteClient(client.id);
                 this.props.removeClient(client.id);
             } else {
-                throw response.status;
+                throw response;
             }
-        }).catch(errorCode => {
-            if (errorCode === 500) {
-                this.statusHandler("error");
-            } else {
-                this.statusHandler("connect_error");
-            }
+        }).catch(error => {
+            this.statusHandler(error.status);
         });
     }
 
@@ -157,25 +153,12 @@ class Home extends React.Component {
             if (response.status === 200) {
                 return response.json();
             } else {
-                throw response.status;
+                throw response;
             }
         }).then(json => {
             this.props.setDefaultAccess(json.readable, json.writable);
-        }).catch(errorCode => {
-            switch (errorCode) {
-                case 400:
-                    this.statusHandler("invalid_request");
-                    break;
-                case 401:
-                    this.statusHandler("invalid_token");
-                    break;
-                case 500:
-                    this.statusHandler("error");
-                    break;
-                default:
-                    this.statusHandler("connect_error");
-                    break;
-            }
+        }).catch(error => {
+            this.statusHandler(error.status);
         });
     }
 
@@ -219,26 +202,8 @@ class Home extends React.Component {
             if (client) {
                 this.props.setAccess(client.id, json.readable, json.writable);
             }
-        }).catch(errorCode => {
-            switch (errorCode.status) {
-                case 400:
-                    this.statusHandler("invalid_request");
-                    break;
-                case 401:
-                    errorCode.json().then(response => {
-                        if (response.reason === "providerToken") {
-                            this.statusHandler("invalid_token");
-                        } else {
-                            this.statusHandler("error");
-                        }
-                    });
-                    break;
-                case 500:
-                    this.statusHandler("error");
-                    break;
-                default:
-                    this.statusHandler("connect_error");
-            }
+        }).catch(error => {
+            this.statusHandler(error.status);
         });
     }
 
@@ -259,13 +224,7 @@ class Home extends React.Component {
                 throw response;
             }
         }).catch(errorCode => {
-            switch (errorCode.status) {
-                case 500:
-                    this.statusHandler("error");
-                    break;
-                default:
-                    this.statusHandler("connect_error");
-            }
+            this.statusHandler(errorCode.status);
         });
     }
 
@@ -277,19 +236,19 @@ class Home extends React.Component {
             case "connect_error":
                 this.props.connectError();
                 break;
-            case "invalid_token":
+            case 401:
                 this.props.invalidToken();
                 break;
             case "invalid_client_token":
                 this.props.invalidClientToken();
                 break;
-            case "invalid_request":
+            case 400:
                 this.props.invalidRequest();
                 break;
             case "connect_timeout":
                 this.props.connectTimeout();
                 break;
-            case "error":
+            case 500:
                 this.props.error();
                 break;
             case "disconnect":

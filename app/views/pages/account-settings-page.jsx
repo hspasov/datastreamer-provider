@@ -31,20 +31,26 @@ class AccountSettings extends React.Component {
         ];
 
         return <div className="settings">
-            <Helmet><style>{`
-      body > div,
-      body > div > div,
-      body > div > div > div.login-form {
-        height: 100%;
-      }
-    `}</style></Helmet>
+            <Helmet>
+                <style>{`
+                    body > div,
+                    body > div > div,
+                    body > div > div > div.login-form {
+                        height: 100%;
+                    }
+                `}</style>
+            </Helmet>
             <Grid style={{ height: "100%" }} verticalAlign="top">
                 <Grid.Row columns={2}>
                     <Grid.Column textAlign="left">
                         <Header>Datastreamer</Header>
                     </Grid.Column>
                     <Grid.Column textAlign="right">
-                        <Link to="/home"><Header color="blue"><Icon corner name="arrow left" />Go back</Header></Link>
+                        <Link to="/home">
+                            <Header color="blue">
+                                <Icon corner name="arrow left" />Go back
+                            </Header>
+                        </Link>
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>

@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
+import FormSubmitError from "./form-submit-error.jsx";
 
 class FormComponent extends React.Component {
     constructor(props) {
@@ -38,9 +39,21 @@ class FormComponent extends React.Component {
                         placeholder={field.placeholder}
                         type={field.type}
                         required={field.required}
+                        autoComplete={field.autocomplete}
                         onChange={event => this[`${field.label}Change`](event)}
                     />)}
-                    <Button color={this.props.submit.color} fluid size="large" onClick={() => this.props.submit.onClick(this.state)}>{this.props.submit.label}</Button>
+                    <Button
+                        color={this.props.submit.color}
+                        fluid
+                        size="large"
+                        onClick={() => this.props.submit.onClick(this.state)}>
+                        {this.props.submit.label}
+                    </Button>
+                    <FormSubmitError
+                        visible={this.props.error.hasFormErrors}
+                        errors={this.props.error.formErrors}
+                    />
+                    {this.props.message}
                 </Segment>
             </Form>
         </Grid.Column>;
