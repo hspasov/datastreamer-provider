@@ -47,6 +47,10 @@ class Client {
         this.receiveICECandidate = receiveICECandidate.bind(this);
         this.scanDirectory = scanDirectory.bind(this);
 
+        if (unitData.accessRules.readable && unitData.accessRules.writable) {
+            this.lockFileHandlers = new Map();
+        }
+
         this.prepareConnectionInitialization(unitData.accessRules);
     }
 
@@ -70,13 +74,19 @@ class Client {
     handleMessageWritable(message) {
         switch (message.type) {
             case "copyFile":
-                this.copyFile(message.payload);
+                this.connector.lockFile(message.payload, () => {
+                    this.copyFile(message.payload);
+                });
                 break;
             case "moveFile":
-                this.moveFile(message.payload);
+                this.connector.lockFile(message.payload, () => {
+                    this.moveFile(message.payload);
+                });
                 break;
             case "deleteFile":
-                this.deleteFile(message.payload);
+                this.connector.lockFile(message.payload, () => {
+                    this.deleteFile(message.payload);
+                });
                 break;
             case "uploadFile":
                 this.prepareUpload(message.payload);
@@ -94,7 +104,9 @@ class Client {
                 break;
             case "downloadFile":
                 console.log(message.payload);
-                this.sendFile(message.payload);
+                this.connector.lockFile(message.payload, () => {
+                    this.sendFile(message.payload);
+                });
                 break;
             case "message":
                 console.log(message.message);
@@ -162,6 +174,7 @@ class Client {
             this.readStream.on("end", () => {
                 console.log("end of file streaming");
                 this.readStream = null;
+                this.connector.unlockFile(filePath);
             });
         } catch (e) {
             if (!this.sendFileChannel) {
@@ -197,6 +210,7 @@ class Client {
             errorOnExist: true
         }).then(() => {
             console.log(`${source} copied`);
+            this.connector.unlockFile(filePath);
         }).catch(error => {
             console.log(error);
         });
@@ -212,6 +226,7 @@ class Client {
         const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.move(source, destination).then(() => {
             console.log(`${source} moved`);
+            this.connector.unlockFile(filePath);
         }).catch(error => {
             console.log(error);
         });
@@ -221,6 +236,7 @@ class Client {
         const source = this.getAbsolutePath(filePath);
         trash([source], { glob: false }).then(() => {
             console.log("deleted");
+            this.connector.unlockFile(filePath);
         }).catch(error => {
             console.log(error);
         });

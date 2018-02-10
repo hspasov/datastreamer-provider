@@ -21,6 +21,16 @@ class UnitToMainConnector {
             this.client.initializeScan(selectedMainDirectory);
         });
 
+        ipcRenderer.on("lock file fail", (event, filePath) => {
+            this.client.lockFileHandlers.delete(filePath);
+            // todo: send message to client
+        });
+
+        ipcRenderer.on("lock file success", (event, filePath) => {
+            this.client.lockFileHandlers.get(filePath)();
+            this.client.lockFileHandlers.delete(filePath);
+        });
+
         ipcRenderer.send("inside unit");
         console.log("fired inside unit");
     }
@@ -49,6 +59,17 @@ class UnitToMainConnector {
 
     changeDirectory(directory) {
         ipcRenderer.send("change directory", this.client.id, directory);
+    }
+
+    lockFile(filePath, onSuccess) {
+        const path = this.client.getAbsolutePath(filePath);
+        this.client.lockFileHandlers.set(path, onSuccess.bind(this.client));
+        ipcRenderer.send("lock file", path);
+    }
+
+    unlockFile(filePath) {
+        const path = this.client.getAbsolutePath(filePath);
+        ipcRenderer.send("unlock file", path);
     }
 }
 

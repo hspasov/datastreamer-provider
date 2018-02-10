@@ -4,6 +4,7 @@ const { BrowserWindow, ipcMain } = require("electron");
 
 function ipcHandler(mainWindow) {
     let socketIdUnitMap = new Map();
+    let lockedFiles = [];
 
     ipcMain.on("create unit", (event, unitData, selectedMainDirectory) => {
         const browserWindow = new BrowserWindow({
@@ -101,6 +102,19 @@ function ipcHandler(mainWindow) {
 
     ipcMain.on("delete all", () => {
         socketIdUnitMap = new Map();
+    });
+
+    ipcMain.on("lock file", (event, filePath) => {
+        if (lockedFiles.find(file => file === filePath)) {
+            event.sender.send("lock file fail", filePath);
+        } else {
+            lockedFiles.push(filePath);
+            event.sender.send("lock file success", filePath);
+        }
+    });
+
+    ipcMain.on("unlock file", (event, filePath) => {
+        lockedFiles = lockedFiles.filter(file => file !== filePath);
     });
 }
 
