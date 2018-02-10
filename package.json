@@ -6,7 +6,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "watch": "webpack"
+    "watch": "webpack --config webpack.dev.config.js",
+    "build": "webpack --config webpack.build.config.js"
   },
   "author": "Hristo Spasov",
   "devDependencies": {
@@ -22,7 +23,9 @@
     "electron-react-devtools": "^0.5.3",
     "electron-rebuild": "^1.7.3",
     "electron-reload": "^1.2.1",
+    "progress-bar-webpack-plugin": "^1.10.0",
     "style-loader": "^0.19.1",
+    "uglifyjs-webpack-plugin": "^1.1.8",
     "url-loader": "^0.6.2",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1"

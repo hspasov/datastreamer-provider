@@ -1,4 +1,5 @@
 const path = require("path").posix;
+const ProgressBarPlugin = require("progress-bar-webpack-plugin");
 
 module.exports = {
     entry: {
@@ -31,6 +32,9 @@ module.exports = {
             }
         ]
     },
+    plugins: [
+        new ProgressBarPlugin()
+    ],
     watch: true,
     watchOptions: {
         ignored: /node_modules/
