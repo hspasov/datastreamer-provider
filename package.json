@@ -7,7 +7,9 @@
   "scripts": {
     "start": "electron .",
     "watch": "webpack --config webpack.dev.config.js",
-    "build": "webpack --config webpack.build.config.js"
+    "build": "webpack --config webpack.build.config.js",
+    "rpm64": "electron-installer-redhat --src datastreamer-provider-linux-x64/ --dest datastreamer-provider-linux-x64/installers --arch x86_64",
+    "deb64": "electron-installer-debian --src datastreamer-provider-linux-x64/ --dest datastreamer-provider-linux-x64/installers --arch amd64"
   },
   "author": "Hristo Spasov",
   "devDependencies": {
@@ -19,7 +21,11 @@
     "babel-preset-react": "^6.24.1",
     "css-loader": "^0.28.9",
     "devtron": "^1.4.0",
-    "electron": "^1.8.1",
+    "electron": "^1.8.2",
+    "electron-installer-debian": "^0.8.0",
+    "electron-installer-redhat": "*",
+    "electron-packager": "^11.0.0",
+    "electron-prebuilt": "*",
     "electron-react-devtools": "^0.5.3",
     "electron-rebuild": "^1.7.3",
     "electron-reload": "^1.2.1",
@@ -27,12 +33,14 @@
     "style-loader": "^0.19.1",
     "uglifyjs-webpack-plugin": "^1.1.8",
     "url-loader": "^0.6.2",
-    "webpack": "^3.10.0",
+    "webpack": "^3.11.0",
     "webpack-dev-server": "^2.11.1"
   },
   "dependencies": {
+    "asar": "^0.14.1",
     "bufferutil": "^3.0.2",
     "chokidar": "^1.7.0",
+    "electron-installer-redhat": "^0.5.0",
     "fbjs": "^0.8.16",
     "file-extension": "^3.1.2",
     "form-urlencoded": "^2.0.4",
