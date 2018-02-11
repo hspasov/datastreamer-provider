@@ -14,7 +14,7 @@ class ClientAccessRules extends React.Component {
                         writable={clientAccessRule.writable}
                         toggle={accessRule => this.props.toggleAccessRule(clientAccessRule.username, accessRule)}
                     />
-                    <Button onClick={() => this.props.removeAccessRule(clientAccessRule.username)}>Remove</Button>
+                    <Button negative onClick={() => this.props.removeAccessRule(clientAccessRule.username)}>Remove</Button>
                 </div>;
             })}
         </div>;

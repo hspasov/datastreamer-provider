@@ -1,16 +1,20 @@
 import React from "react";
-import { Checkbox, Label } from "semantic-ui-react";
+import { Checkbox, Header } from "semantic-ui-react";
 
 class AccessTogglesComponent extends React.Component {
     render() {
         return <div>
             <div>
-                <Label>Readable:</Label>
-                <Checkbox name="readable" toggle checked={this.props.readable} onClick={() => this.props.toggle("readable")} />
+                <Header as="h4">
+                    Readable:
+                    <Checkbox name="readable" toggle checked={this.props.readable} onClick={() => this.props.toggle("readable")} />
+                </Header>
             </div>
             {this.props.readable && <div>
-                <Label>Writable:</Label>
-                <Checkbox name="writable" toggle checked={this.props.writable} onClick={() => this.props.toggle("writable")} />
+                <Header as="h4">
+                    Writable:
+                    <Checkbox name="writable" toggle checked={this.props.writable} onClick={() => this.props.toggle("writable")} />
+                </Header>
             </div>}
         </div>;
     }
