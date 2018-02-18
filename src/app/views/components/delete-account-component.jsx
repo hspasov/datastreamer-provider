@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
+import { Grid } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import { logoutProvider } from "../../store/actions/provider";
 import FormComponent from "./form-component.jsx";
@@ -51,26 +52,30 @@ class DeleteAccount extends React.Component {
     }
 
     render() {
-        return <FormComponent
-            title="Delete account"
-            fields={[{
-                label: "password",
-                icon: "lock",
-                placeholder: "Password",
-                type: "password",
-                required: true,
-                autocomplete: "off"
-            }]}
-            submit={{
-                label: "DELETE",
-                color: "red",
-                onClick: form => this.handleSubmit(form)
-            }}
-            error={{
-                hasFormErrors: this.state.hasFormErrors,
-                formErrors: this.state.formErrors
-            }}
-        />;
+        return <Grid>
+            <Grid.Row centered>
+                <FormComponent
+                    title="Delete account"
+                    fields={[{
+                        label: "password",
+                        icon: "lock",
+                        placeholder: "Password",
+                        type: "password",
+                        required: true,
+                        autocomplete: "off"
+                    }]}
+                    submit={{
+                        label: "DELETE",
+                        color: "red",
+                        onClick: form => this.handleSubmit(form)
+                    }}
+                    error={{
+                        hasFormErrors: this.state.hasFormErrors,
+                        formErrors: this.state.formErrors
+                    }}
+                />
+            </Grid.Row>
+        </Grid>;
     }
 }
 

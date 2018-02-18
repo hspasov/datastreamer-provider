@@ -75,11 +75,7 @@ function respondToOffer(remoteDesctiption) {
 
 function receiveICECandidate(candidate) {
     try {
-        console.log("adding ice candidate", candidate);
-        this.peerConnection.addIceCandidate(candidate).then(() => {
-
-        }).catch(error => {
-            console.log("failed to add candidate", error);
+        this.peerConnection.addIceCandidate(candidate).catch(error => {
             this.connector.deleteClient(error);
         });
     } catch (e) {

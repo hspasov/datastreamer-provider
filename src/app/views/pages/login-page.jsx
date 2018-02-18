@@ -94,7 +94,7 @@ class Login extends React.Component {
                 </Grid.Row>
                 <Grid.Row centered>
                     <FormComponent
-                        title="Login to your account"
+                        title="Log into your account"
                         fields={[
                             {
                                 label: "username",
@@ -114,7 +114,7 @@ class Login extends React.Component {
                             }
                         ]}
                         submit={{
-                            label: "Login",
+                            label: "Log in",
                             color: "black",
                             onClick: form => this.handleSubmit(form)
                         }}

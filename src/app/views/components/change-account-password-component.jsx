@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
+import { Grid } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import { loginProvider } from "../../store/actions/provider";
 import FormComponent from "./form-component.jsx";
@@ -68,44 +69,48 @@ class ChangeAccountPassword extends React.Component {
     }
 
     render() {
-        return <FormComponent
-            title="Change password"
-            fields={[
-                {
-                    label: "oldPassword",
-                    icon: "lock",
-                    placeholder: "Old password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "off"
-                },
-                {
-                    label: "newPassword",
-                    icon: "lock",
-                    placeholder: "New password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "new-password"
-                },
-                {
-                    label: "confirmNewPassword",
-                    icon: "lock",
-                    placeholder: "Confirm new password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "new-password"
-                }
-            ]}
-            submit={{
-                label: "Submit",
-                color: "black",
-                onClick: form => this.handleSubmit(form)
-            }}
-            error={{
-                hasFormErrors: this.state.hasFormErrors,
-                formErrors: this.state.formErrors
-            }}
-        />;
+        return <Grid>
+            <Grid.Row centered>
+                <FormComponent
+                    title="Change password"
+                    fields={[
+                        {
+                            label: "oldPassword",
+                            icon: "lock",
+                            placeholder: "Old password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "off"
+                        },
+                        {
+                            label: "newPassword",
+                            icon: "lock",
+                            placeholder: "New password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "new-password"
+                        },
+                        {
+                            label: "confirmNewPassword",
+                            icon: "lock",
+                            placeholder: "Confirm new password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "new-password"
+                        }
+                    ]}
+                    submit={{
+                        label: "Submit",
+                        color: "black",
+                        onClick: form => this.handleSubmit(form)
+                    }}
+                    error={{
+                        hasFormErrors: this.state.hasFormErrors,
+                        formErrors: this.state.formErrors
+                    }}
+                />
+            </Grid.Row>
+        </Grid>;
     }
 }
 

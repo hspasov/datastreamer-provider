@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { withRouter } from "react-router-dom";
+import { Grid } from "semantic-ui-react";
 import formurlencoded from "form-urlencoded";
 import FormComponent from "./form-component.jsx";
 import { loginProvider } from "../../store/actions/provider";
@@ -64,44 +65,48 @@ class ChangeClientConnectPassword extends React.Component {
     }
 
     render() {
-        return <FormComponent
-            title="Change client connect password"
-            fields={[
-                {
-                    label: "accountPassword",
-                    icon: "lock",
-                    placeholder: "Account password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "off"
-                },
-                {
-                    label: "newClientConnectPassword",
-                    icon: "lock",
-                    placeholder: "New client connect password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "off"
-                },
-                {
-                    label: "confirmNewClientConnectPassword",
-                    icon: "lock",
-                    placeholder: "Confirm new client connect password",
-                    type: "password",
-                    required: true,
-                    autocomplete: "off"
-                }
-            ]}
-            submit={{
-                label: "Submit",
-                color: "black",
-                onClick: form => this.handleSubmit(form)
-            }}
-            error={{
-                hasFormErrors: this.state.hasFormErrors,
-                formErrors: this.state.formErrors
-            }}
-        />;
+        return <Grid>
+            <Grid.Row centered>
+                <FormComponent
+                    title="Change client connect password"
+                    fields={[
+                        {
+                            label: "accountPassword",
+                            icon: "lock",
+                            placeholder: "Account password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "off"
+                        },
+                        {
+                            label: "newClientConnectPassword",
+                            icon: "lock",
+                            placeholder: "New client connect password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "off"
+                        },
+                        {
+                            label: "confirmNewClientConnectPassword",
+                            icon: "lock",
+                            placeholder: "Confirm new client connect password",
+                            type: "password",
+                            required: true,
+                            autocomplete: "off"
+                        }
+                    ]}
+                    submit={{
+                        label: "Submit",
+                        color: "black",
+                        onClick: form => this.handleSubmit(form)
+                    }}
+                    error={{
+                        hasFormErrors: this.state.hasFormErrors,
+                        formErrors: this.state.formErrors
+                    }}
+                />
+            </Grid.Row>
+        </Grid>;
     }
 }
 

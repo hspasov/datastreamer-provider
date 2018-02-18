@@ -220,25 +220,22 @@ class Client {
         const source = this.getAbsolutePath(filePath);
         const basename = sanitize(pathModule.basename(filePath));
         if (!basename) {
-            console.log("Invalid path");
             return;
         }
         const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
         fs.move(source, destination).then(() => {
-            console.log(`${source} moved`);
             this.connector.unlockFile(filePath);
         }).catch(error => {
-            console.log(error);
+            this.sendMessage("error", error);
         });
     }
 
     deleteFile(filePath) {
         const source = this.getAbsolutePath(filePath);
         trash([source], { glob: false }).then(() => {
-            console.log("deleted");
             this.connector.unlockFile(filePath);
         }).catch(error => {
-            console.log(error);
+            this.sendMessage("error", error);
         });
     }
 

@@ -10,6 +10,8 @@
     "build": "webpack --config webpack.build.config.js"
   },
   "author": "Hristo Spasov",
+  "license": "MIT",
+  "repository": "github:hspasov/datastreamer-provider",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
