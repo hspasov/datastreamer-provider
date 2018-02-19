@@ -10,6 +10,7 @@ function prepareConnectionInitialization(accessRules) {
     };
 
     this.peerConnection.ondatachannel = event => {
+        this.resets = 0;
         switch (event.channel.label) {
             case "clientMessage":
                 if (accessRules.readable) {
@@ -55,7 +56,6 @@ function prepareConnectionInitialization(accessRules) {
 
 function respondToOffer(remoteDesctiption) {
     try {
-        console.log("setting remote description", remoteDesctiption);
         this.peerConnection.setRemoteDescription(remoteDesctiption);
         this.peerConnection.createAnswer().then(localDescription => {
             return this.peerConnection.setLocalDescription(localDescription);

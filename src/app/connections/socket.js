@@ -82,7 +82,7 @@ function Socket(connector, token, pageAccessor) {
     });
 
     this.socket.on("connect_reset", clientSocketId => {
-        this.connector.resetUnit(clientSocketId);
+        this.connector.resetUnit(clientSocketId, this.connector.selectedMainDirectory);
     });
 
     this.socket.on("ice_candidate", (clientSocketId, candidate) => {

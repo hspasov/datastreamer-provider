@@ -42,6 +42,9 @@ class Client {
         this.receivedBytes = 0;
         this.bufferedAmountHighThreshold = 15 * 1024 * 1024; // 15 MB, WebRTC fails at 16MB
 
+        this.resetsLimit = 10;
+        this.resets = 0;
+
         this.prepareConnectionInitialization = prepareConnectionInitialization.bind(this);
         this.respondToOffer = respondToOffer.bind(this);
         this.receiveICECandidate = receiveICECandidate.bind(this);
@@ -284,7 +287,12 @@ class Client {
         this.receiveFileChannel && this.receiveFileChannel.close();
         this.peerConnection && this.peerConnection.close();
         if (error) {
-            this.connector.resetConnection();
+            if (this.resets >= this.resetsLimit) {
+                this.connector.deleteClient();
+            } else {
+                this.resets++;
+                this.connector.resetConnection();
+            }
         }
     }
 };
