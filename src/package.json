@@ -1,7 +1,7 @@
 {
   "name": "data-streamer-provider",
   "productName": "DataStreamer Provider",
-  "version": "1.0.2-0",
+  "version": "1.0.2",
   "description": "Electron application that monitors data in selected directory and provides it to receiver.",
   "main": "main.js",
   "scripts": {

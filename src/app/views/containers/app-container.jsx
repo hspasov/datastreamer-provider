@@ -17,10 +17,10 @@ class App extends React.Component {
     render() {
         return <div id="page">
             <Switch>
-                <Route path="/home" component={HomePage} />
-                <Route path="/login" component={LoginPage} />
-                <Route path="/register" component={RegisterPage} />
-                <Route path="/account-settings" component={AccountSettingsPage} />
+                <Route path="/register" exact component={RegisterPage} />
+                <Route path="/login" exact component={LoginPage} />
+                <Route path="/home" exact component={HomePage} />
+                <Route path="/account-settings" exact component={AccountSettingsPage} />
             </Switch>
         </div>;
     }
