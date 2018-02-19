@@ -15,7 +15,6 @@ let mainWindow;
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({ width: 800, height: 600 });
-    mainWindow.webContents.openDevTools();
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, "index.html"),
         protocol: "file:"

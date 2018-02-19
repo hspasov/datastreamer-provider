@@ -12,7 +12,6 @@ function ipcHandler(mainWindow) {
             show: false
         });
         browserWindow.once("ready-to-show", () => {
-            browserWindow.show();
             browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
         });
         socketIdUnitMap.set(unitData.clientSocketId, {
@@ -74,7 +73,7 @@ function ipcHandler(mainWindow) {
         }
     });
 
-    ipcMain.on("reset unit", (event, clientSocketId) => {
+    ipcMain.on("reset unit", (event, clientSocketId, selectedMainDirectory) => {
         let unit = socketIdUnitMap.get(clientSocketId);
         const unitData = {
             clientSocketId,
@@ -95,7 +94,6 @@ function ipcHandler(mainWindow) {
             slashes: true
         }));
         unit.browserWindow.once("ready-to-show", () => {
-            unit.browserWindow.show();
             unit.browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
         });
     });
