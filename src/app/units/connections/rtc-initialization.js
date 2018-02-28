@@ -1,10 +1,7 @@
 function prepareConnectionInitialization(accessRules) {
     this.peerConnection = new RTCPeerConnection(this.servers, this.peerConnectionConstraint);
-    console.log("Created local peer connection object localConnection");
     this.peerConnection.onicecandidate = event => {
-        console.log("local ice callback");
         if (event.candidate) {
-            console.log("sending ice candidate", event.candidate);
             this.connector.sendICECandidate(event.candidate);
         }
     };
@@ -46,7 +43,6 @@ function prepareConnectionInitialization(accessRules) {
     this.sendFileChannel.bufferedAmountLowThreshold = 1024 * 1024; // 1 MB
 
     this.sendMessageChannel.onopen = () => {
-        console.log("send message channel is open!");
         if (this.selectedMainDirectory) {
             this.scanDirectory();
         }
@@ -66,9 +62,11 @@ function respondToOffer(remoteDesctiption) {
         });
     } catch (e) {
         if (!this.peerConnection) {
-            console.log("Connection to client lost.");
+            // todo: Handle lost connection
+            return;
         } else {
-            throw e;
+            // todo: Handle error
+            return;
         }
     }
 }
@@ -80,9 +78,11 @@ function receiveICECandidate(candidate) {
         });
     } catch (e) {
         if (!this.peerConnection) {
-            console.log("Connection to client lost.");
+            // todo: Handle lost connection
+            return;
         } else {
-            throw e;
+            // todo: Handle error
+            return;
         }
     }
 }

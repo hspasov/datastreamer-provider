@@ -68,7 +68,7 @@ class Home extends React.Component {
 
     initializeScan() {
         if (!this.connector.selectedMainDirectory) {
-            console.log("Please select a directory to scan");
+            // todo: Show error to user
         } else {
             this.props.changeMainDirectory(this.connector.selectedMainDirectory);
             this.connector.initializeScan();
@@ -102,7 +102,7 @@ class Home extends React.Component {
             this.props.logoutProvider();
             this.props.history.push("/login");
         }).catch(error => {
-            console.log(error);
+            // todo: Handle error
         });
     }
 

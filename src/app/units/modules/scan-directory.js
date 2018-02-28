@@ -13,17 +13,13 @@ function scanDirectory() {
 
     this.sendMessage("newScan");
     this.watcher
-        .on("raw", (event, path, details) => {
-            // This event should be triggered everytime something happens.
-            console.log("Raw event info:", event, path, details);
-        })
         .on("add", (path, stats) => {
             magic.detectFile(path).then(mime => {
                 return this.getFileMetadata(path, stats, mime);
             }).then(fileMetadata => {
                 this.sendMessage("add", fileMetadata);
             }).catch(error => {
-                console.log(error);
+                // todo: Handle error;
             });
         })
         .on("addDir", (path, stats) => {
@@ -33,7 +29,7 @@ function scanDirectory() {
                 this.getFileMetadata(path, stats, "inode/directory").then(fileMetadata => {
                     this.sendMessage("addDir", fileMetadata);
                 }).catch(error => {
-                    console.log(error);
+                    // todo: Handle error
                 });
             }
         })
@@ -43,7 +39,7 @@ function scanDirectory() {
             }).then(fileMetadata => {
                 this.sendMessage("change", fileMetadata);
             }).catch(error => {
-                console.log(error);
+                // todo: Handle error
             });
         })
         .on("unlink", path => {
@@ -53,10 +49,9 @@ function scanDirectory() {
             this.sendMessage("unlinkDir", this.getRelativePath(path));
         })
         .on("error", error => {
-            console.log("Error happened", error);
+            // todo: Handle error
         })
         .on("ready", () => {
-            console.info("Initial scan has been completed.");
             this.sendMessage("scanFinished");
         });
 }

@@ -50,9 +50,7 @@ class Client {
         this.receiveICECandidate = receiveICECandidate.bind(this);
         this.scanDirectory = scanDirectory.bind(this);
 
-        if (unitData.accessRules.readable && unitData.accessRules.writable) {
-            this.lockFileHandlers = new Map();
-        }
+        this.lockFileHandlers = new Map();
 
         this.prepareConnectionInitialization(unitData.accessRules);
     }
@@ -71,7 +69,7 @@ class Client {
     }
 
     errorHandler(error) {
-        console.log(error);
+        // todo
     }
 
     handleMessageWritable(message) {
@@ -106,13 +104,9 @@ class Client {
                 this.scanDirectory();
                 break;
             case "downloadFile":
-                console.log(message.payload);
                 this.connector.lockFile(message.payload, () => {
                     this.sendFile(message.payload);
                 });
-                break;
-            case "message":
-                console.log(message.message);
                 break;
         }
     }
@@ -122,21 +116,19 @@ class Client {
             this.receivedBytes += chunk.byteLength;
             if (this.receivedBytes >= this.uploadedFileData.size) {
                 this.writeStream.end(Buffer.from(chunk));
-                console.log("end of file");
             } else {
                 this.writeStream.write(Buffer.from(chunk));
             }
         } catch (error) {
-            console.log(error);
+            // todo: Handle error
         }
     }
 
     prepareUpload(fileData) {
         this.uploadedFileData = fileData;
-        console.log(fileData);
         const sanitizedFileName = sanitize(pathModule.basename(fileData.name));
         if (!sanitizedFileName) {
-            console.log("Invalid file name");
+            // todo: handle invalid name
             return;
         }
         const filePath = pathModule.join(
@@ -151,17 +143,15 @@ class Client {
         });
         this.writeStream.on("error", error => {
             this.writeStream.end();
-            console.log(error);
+            // todo: Error message
         });
         this.receivedBytes = 0;
         this.sendMessage("readyForFile");
     }
 
     sendFile(filePath) {
-        console.log(filePath);
         try {
             const path = this.getAbsolutePath(filePath);
-            console.log(path);
             this.readStream = fs.createReadStream(path);
             this.sendFileChannel.onbufferedamountlow = () => {
                 if (this.readStream) {
@@ -175,15 +165,16 @@ class Client {
                 this.sendFileChannel.send(chunk);
             });
             this.readStream.on("end", () => {
-                console.log("end of file streaming");
                 this.readStream = null;
                 this.connector.unlockFile(filePath);
             });
         } catch (e) {
             if (!this.sendFileChannel) {
-                console.log("Can't finish task. Connection to provider lost.");
+                // todo: Handle unexpectedly closed connection
+                return;
             } else {
-                throw e;
+                // todo: Handle error
+                return;
             }
         }
     }
@@ -193,9 +184,11 @@ class Client {
             this.sendMessageChannel.send(JSON.stringify({ type, payload }));
         } catch (e) {
             if (!this.sendMessageChannel) {
-                console.log("Can't finish task. Connection to provider lost.");
+                // todo: Handle unexpectedly closed connection
+                return;
             } else {
-                throw e;
+                // todo: Handle error
+                return;
             }
         }
     }
@@ -204,7 +197,7 @@ class Client {
         const source = this.getAbsolutePath(filePath);
         const basename = sanitize(pathModule.basename(filePath));
         if (!basename) {
-            console.log("Invalid path");
+            // todo: Handle invalid file path
             return;
         }
         const destination = pathModule.join(this.selectedMainDirectory, this.currentDirectory, basename);
@@ -212,10 +205,9 @@ class Client {
             overwrite: false,
             errorOnExist: true
         }).then(() => {
-            console.log(`${source} copied`);
             this.connector.unlockFile(filePath);
         }).catch(error => {
-            console.log(error);
+            // todo: Handle error
         });
     }
 
@@ -245,20 +237,20 @@ class Client {
     changeDirectory(selectedDirectory) {
         const path = this.getAbsolutePath(selectedDirectory);
         if (!selectedDirectory) {
-            throw `Invalid directory ${selectedDirectory}`;
+            // todo: Handle invalid directory
+            return;
         }
         if (this.watcher) {
             this.watcher.close();
         }
         this.watcher = null;
         this.currentDirectory = path.substring(this.selectedMainDirectory.length);
-        console.log(this.currentDirectory);
         this.connector.changeDirectory(path);
     }
 
     async getFileMetadata(path, stats, mime) {
         if (!path) {
-            throw `Invalid path, ${path}`;
+            // todo: Handle invalid path
         }
         return {
             name: pathModule.basename(path),

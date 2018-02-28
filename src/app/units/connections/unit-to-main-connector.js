@@ -8,12 +8,10 @@ class UnitToMainConnector {
         });
 
         ipcRenderer.on("receive description", (event, remoteDescription) => {
-            console.log(remoteDescription);
             this.client.respondToOffer(JSON.parse(remoteDescription));
         });
 
         ipcRenderer.on("receive ICE candidate", (event, candidate) => {
-            console.log(candidate);
             this.client.receiveICECandidate(JSON.parse(candidate));
         });
 
@@ -30,18 +28,13 @@ class UnitToMainConnector {
             this.client.lockFileHandlers.get(filePath)();
             this.client.lockFileHandlers.delete(filePath);
         });
-
-        ipcRenderer.send("inside unit");
-        console.log("fired inside unit");
     }
 
     requestP2PConnection() {
         ipcRenderer.send("request P2P connection", this.client.id);
-        console.log("sent request P2P connection with this.client.id=", this.client.id);
     }
 
     sendDescription(localDescription) {
-        console.log("inside sendDescription with desc=", localDescription);
         ipcRenderer.send("send description", this.client.id, JSON.stringify(localDescription));
     }
 
