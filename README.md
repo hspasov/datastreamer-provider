@@ -42,7 +42,7 @@ Registering a new provider requires chosing a username and two passwords. The fi
 
 ![Register screen](./doc/UI/register_page.png)
 
-After successful authentication, select the main accessible directory. If necessary, set access rules and manage connected clients. (the default settings for access rules do not allow clients to connect - at least read only access must be providedd)
+After successful authentication, select the main accessible directory. If necessary, set access rules and manage connected clients. (the default settings for access rules do not allow clients to connect - at least read only access must be provided)
 
 ![Provider control panel](./doc/UI/home_page.png)
 
