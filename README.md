@@ -18,11 +18,21 @@ Write access provides more options: upload, copy, move, delete files and edit te
 
 DataStreamer-Provider works on GNU/Linux (x86_64). Support for Windows (32/64 bit), macOS and Linux(x86, armv7l, arm64, mips64el) to be expected in the future.
 
+## Requirements
+
+Debian: `libgconf2-4`
+
+```
+$ sudo apt install libgconf2-4
+```
+
 ## Installation
 
-
+Download and extract the archive file `datastreamer-provider-linux-x64.zip`, located in `datastreamer-server/bin/`
 
 ## Usage
+
+To open the app, launch the executable `datastreamer-provider` from the extracted archive file.
 
 Log into a provider account or create a new one.
 

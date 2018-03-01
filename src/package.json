@@ -8,7 +8,7 @@
     "start": "electron .",
     "watch": "webpack --config webpack.dev.config.js",
     "build": "webpack --config webpack.build.config.js",
-    "package": "electron-packager . ../bin/datastreamer-provider"
+    "package": "electron-packager . datastreamer-provider"
   },
   "author": "Hristo Spasov",
   "license": "MIT",
@@ -38,8 +38,6 @@
     "fbjs": "^0.8.16",
     "form-urlencoded": "^2.0.4",
     "fs-extra": "^5.0.0",
-    "ipc": "0.0.1",
-    "mime": "^2.2.0",
     "promise-mmmagic": "0.0.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
