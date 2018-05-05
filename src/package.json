@@ -39,6 +39,7 @@
     "fbjs": "^0.8.16",
     "form-urlencoded": "^2.0.4",
     "fs-extra": "^5.0.0",
+    "hoek": "^4.2.1",
     "promise-mmmagic": "0.0.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
