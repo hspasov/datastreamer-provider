@@ -16,6 +16,7 @@ const createWindow = () => {
         pathname: path.join(__dirname, "index.html"),
         protocol: "file:"
     }));
+    // mainWindow.webContents.openDevTools();
 
     mainWindow.on("closed", () => {
         // Dereference the window object, usually you would store windows
