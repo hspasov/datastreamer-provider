@@ -1,7 +1,6 @@
 const pathModule = window.require("path").posix;
 const chokidar = window.require("chokidar");
-const Magic = window.require("promise-mmmagic");
-const magic = new Magic(Magic.MAGIC_MIME_TYPE);
+const mime = window.require("mime-types");
 
 function scanDirectory() {
     let isCurrentDirectory = true;
@@ -14,9 +13,8 @@ function scanDirectory() {
     this.sendMessage("newScan");
     this.watcher
         .on("add", (path, stats) => {
-            magic.detectFile(path).then(mime => {
-                return this.getFileMetadata(path, stats, mime);
-            }).then(fileMetadata => {
+            const mimeType = mime.lookup(path);
+            this.getFileMetadata(path, stats, mimeType).then(fileMetadata => {
                 this.sendMessage("add", fileMetadata);
             }).catch(error => {
                 // todo: Handle error;
@@ -34,9 +32,8 @@ function scanDirectory() {
             }
         })
         .on("change", (path, stats) => {
-            magic.detectFile(path).then(mime => {
-                return this.getFileMetadata(path, stats, mime);
-            }).then(fileMetadata => {
+            const mimeType = mime.lookup(path);
+            this.getFileMetadata(path, stats, mimeType).then(fileMetadata => {
                 this.sendMessage("change", fileMetadata);
             }).catch(error => {
                 // todo: Handle error

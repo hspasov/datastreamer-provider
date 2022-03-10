@@ -9,9 +9,13 @@ function ipcHandler(mainWindow) {
     ipcMain.on("create unit", (event, unitData, selectedMainDirectory) => {
         const browserWindow = new BrowserWindow({
             parent: mainWindow,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            },
             show: false
         });
-        browserWindow.once("ready-to-show", () => {
+        browserWindow.webContents.on("did-finish-load", () => {
             // browserWindow.show();
             browserWindow.webContents.send("initialize", unitData, selectedMainDirectory);
         });
@@ -85,6 +89,10 @@ function ipcHandler(mainWindow) {
         unit.browserWindow.close();
         unit.browserWindow = new BrowserWindow({
             parent: mainWindow,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false
+            },
             show: false
         });
         socketIdUnitMap.set(clientSocketId, unit);

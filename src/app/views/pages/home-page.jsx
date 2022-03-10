@@ -128,7 +128,8 @@ class Home extends React.Component {
 
     handleSelectMainDirectory(event) {
         if (event.target.files[0]) {
-            let dirPath = event.target.files[0].path;
+            let dirPathEnd = event.target.files[0].path.lastIndexOf('/');
+            let dirPath = event.target.files[0].path.substring(0, dirPathEnd);
             this.connector.selectedMainDirectory = dirPath;
             this.props.setMainDirectory(dirPath);
         }

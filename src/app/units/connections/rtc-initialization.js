@@ -52,8 +52,9 @@ function prepareConnectionInitialization(accessRules) {
 
 function respondToOffer(remoteDesctiption) {
     try {
-        this.peerConnection.setRemoteDescription(remoteDesctiption);
-        this.peerConnection.createAnswer().then(localDescription => {
+        this.peerConnection.setRemoteDescription(remoteDesctiption).then(() => {
+            return this.peerConnection.createAnswer();
+        }).then(localDescription => {
             return this.peerConnection.setLocalDescription(localDescription);
         }).then(() => {
             this.connector.sendDescription(this.peerConnection.localDescription);
